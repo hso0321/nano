@@ -1,18 +1,17 @@
-cmake_minimum_required(VERSION 2.8.3)
-project(ros_sub)
+cmake_minimum_required(VERSION 3.0.2)
+project(project_ros)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+# add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
-  ddynamic_reconfigure
+  darknet_ros_msgs
   image_transport
   roscpp
-  rospy
   sensor_msgs
   std_msgs
   tf
@@ -77,7 +76,7 @@ find_package(OpenCV)
 ## Generate added messages and services with any dependencies listed here
  generate_messages(
    DEPENDENCIES
-   sensor_msgs#   std_msgs
+   darknet_ros_msgs   sensor_msgs   std_msgs
  )
 
 ################################################
@@ -111,9 +110,9 @@ find_package(OpenCV)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES ros_sub
-  CATKIN_DEPENDS cv_bridge ddynamic_reconfigure image_transport roscpp rospy sensor_msgs std_msgs tf
-  DEPENDS system_lib
+  LIBRARIES project_ros
+  CATKIN_DEPENDS cv_bridge darknet_ros_msgs image_transport roscpp sensor_msgs std_msgs tf
+#  DEPENDS system_lib
 )
 
 ###########
@@ -123,25 +122,26 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
- include
+# include
+  /home/kim/catkin_ws/src/project_ros/include
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/ros_sub.cpp
+#   src/${PROJECT_NAME}/project_ros.cpp
 # )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-##add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(${PROJECT_NAME}_node src/ros_sub.cpp)
+add_executable(project_ros src/project_ros.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -151,13 +151,13 @@ add_executable(${PROJECT_NAME}_node src/ros_sub.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(project_ros ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(${PROJECT_NAME}_node
-  ${catkin_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-)
+ target_link_libraries(project_ros
+   ${catkin_LIBRARIES}
+   ${OpenCV_LIBRARIES}
+ )
 
 #############
 ## Install ##
@@ -206,7 +206,7 @@ target_link_libraries(${PROJECT_NAME}_node
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_ros_sub.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_project_ros.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
