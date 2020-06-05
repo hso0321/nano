@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <vector>
 #include <string>
@@ -34,7 +35,7 @@ cv::Mat dst;
 void sub_imu_cam_callback(const sensor_msgs::Imu::ConstPtr& msg);
 void sub_rgb_cam_callback(const sensor_msgs::Image::ConstPtr& msg);
 void sub_rasp_cam_callback(const sensor_msgs::Image::ConstPtr& msg);
-void sub_depth_callback(const sensor_msgs::Image::ConstPtr &msg);
+void sub_depth_callback(const sensor_msgs::Image::ConstPtr& msg);
 void sub_yolo_count_callback(const darknet_ros_msgs::ObjectCount::ConstPtr &msg);
 void sub_yolo_callback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg);
 

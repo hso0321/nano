@@ -31,7 +31,7 @@ int main(int argc, char **argv)
     
     projectPublisher_ = n.advertise<darknet_ros_msgs::BoundingBoxes>("projet_pub", 1);
 
-    sub_rasp_cam = n.subscribe("/jetbot_camera/raw", 2, sub_rasp_cam_callback);
+    sub_rasp_cam = n.subscribe("/rasp_cam_pub", 1, sub_rasp_cam_callback);
     sub_rgb_cam = n.subscribe("/cam_1/color/image_raw", 2, sub_rgb_cam_callback);
     sub_imu_cam = n.subscribe("/imu", 2, sub_imu_cam_callback);
     sub_depth = n.subscribe("/cam_1/depth/image_rect_raw", 2, sub_depth_callback);
@@ -77,8 +77,6 @@ void sub_rgb_cam_callback(const sensor_msgs::Image::ConstPtr& msg)
         ROS_ERROR("d435i image error");
         std::cerr << e.what() << '\n';
     }
-    
-
 }
 
 void sub_rasp_cam_callback(const sensor_msgs::Image::ConstPtr& msg)
@@ -89,7 +87,7 @@ void sub_rasp_cam_callback(const sensor_msgs::Image::ConstPtr& msg)
         cvi=cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
         //저장
-        //writer_rasp.write(cvi->image); 
+        //writer_rasp.write(cvi->image);
         cv::imshow("rasp_view", cvi->image);
         cv::waitKey(1);
         //ROS_INFO("rasp_cam receive suceess");
@@ -112,7 +110,7 @@ void CallBackFunc(int event, int x, int y, int flags, void* userdata)
 }
 */
 
-void sub_depth_callback(const sensor_msgs::Image::ConstPtr &msg)
+void sub_depth_callback(const sensor_msgs::Image::ConstPtr& msg)
 {
     try
     {
