@@ -1,0 +1,9 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/han/catkin_ws/devel/lib/python2.7/dist-packages",
+        "/opt/ros/melodic/lib/python2.7/dist-packages"
+    ],
+    "git.ignoreLimitWarning": true,
+    "python.pythonPath": "/home/han/anaconda3/envs/DL-py36/bin/python",
+    "cmake.configureOnOpen": false
+}
