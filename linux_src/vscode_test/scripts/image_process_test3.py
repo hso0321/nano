@@ -358,9 +358,9 @@ def sliding_window(b_img, output, left_line, right_line, window_height):
             # 중간 사라지게 테스트
             else:
                 # print('window =', window)
-                print('num right idx under cutline')
+                # print('num right idx under cutline')
                 # print('num right inds =', num_right_inds)
-                # print('win_right_lane', win_right_lane)
+                print('win_right_lane', win_right_lane)
 
         # 첫번째 윈도우에서 첫 포인트 판별
         if window == 0:
@@ -372,14 +372,14 @@ def sliding_window(b_img, output, left_line, right_line, window_height):
                     left_line.startx = None
                     left_line.detected = False
 
-                    print('swap l to r')
+                    # print('swap l to r')
                 else:
                     left_line.startx = current_leftX
                 # 점선이나 선이 없을 때
                 if num_left_inds < min_num_pixel: 
                     left_line.detected = False
                     left_line.startx = None
-                    print('left num idx =', num_left_inds)
+                    # print('left num idx =', num_left_inds)
             else:
                 if current_rightX is not None:
                     left_line.counter == 0
@@ -391,14 +391,14 @@ def sliding_window(b_img, output, left_line, right_line, window_height):
                     right_line.startx = None
                     right_line.detected = False
 
-                    print('swap r to l')
+                    # print('swap r to l')
                 else:
                     right_line.startx = current_rightX
 
                 if num_right_inds < min_num_pixel:
                     right_line.detected = False
                     right_line.startx = None
-                    print('right num idx =', num_right_inds)
+                    # print('right num idx =', num_right_inds)
 
             if left_line.detected == False:
                 if right_line.detected == False:            # 좌우 모두 없음
@@ -428,14 +428,14 @@ def sliding_window(b_img, output, left_line, right_line, window_height):
         left_fit = np.polyfit(left_weight_y, left_weight_x, 2)
        
         # 테스트 출력
-        print('left fit =', left_fit)
+        # print('left fit =', left_fit)
     else:
         left_fit = None
     if len(right_weight_x) > 3:
         right_fit = np.polyfit(right_weight_y, right_weight_x, 2)
         
         # 테스트 출력
-        print('right fit =', right_fit)
+        # print('right fit =', right_fit)
     else:
         right_fit = None
 
@@ -461,12 +461,12 @@ def blind_search(b_img, left_line, right_line):
     nonzerox = np.array(nonzero[1])
     if left_line.counter == 0:
         output = find_first(b_img, left_line, right_line)
-        print('counter =', left_line.counter)
+        # print('counter =', left_line.counter)
     else:
         print('counter =', left_line.counter)
     output = sliding_window(b_img, output, left_line, right_line, window_height)
     
-    print('lane detect result =', left_line.detected, right_line.detected)
+    # print('lane detect result =', left_line.detected, right_line.detected)
 
     return output
 
@@ -567,7 +567,7 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
                 else:
                     current_rightX = None
                     l_flag = 0
-                print('numbers of left index < min pixel')
+                # print('numbers of left index < min pixel')
         else:
             if l_flag == 0:
                 l_flag += 1
@@ -596,7 +596,7 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
                 else:
                     current_rightX = None
                     r_flag = 0
-                print("numbers of right index < min pixel")
+                # print("numbers of right index < min pixel")
         else:
             if r_flag == 0:
                 r_flag += 1
@@ -614,14 +614,14 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
                     left_line.startx = None
                     left_line.detected = False
 
-                    print('swap l to r')
+                    # print('swap l to r')
                 else:
                     left_line.startx = current_leftX
                 # 점선이나 선이 없을 때
                 if num_left_inds < min_num_pixel: 
                     left_line.detected = False
                     left_line.startx = None
-                    print('left num idx =', num_left_inds)
+                    # print('left num idx =', num_left_inds)
             else:
                 if current_rightX is not None:
                     left_line.counter == 0
@@ -633,14 +633,14 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
                     right_line.startx = None
                     right_line.detected = False
 
-                    print('swap r to l')
+                    # print('swap r to l')
                 else:
                     right_line.startx = current_rightX
 
                 if num_right_inds < min_num_pixel:
                     right_line.detected = False
                     right_line.startx = None
-                    print('right num idx =', num_right_inds)
+                    # print('right num idx =', num_right_inds)
 
     if left_line.detected == False:
         if right_line.detected == False:            # 좌우 모두 없음
@@ -670,14 +670,14 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
         left_fit = np.polyfit(left_weight_y, left_weight_x, 2)
        
         # 테스트 출력
-        print('left fit =', left_fit)
+        # print('left fit =', left_fit)
     else:
         left_fit = None
     if len(right_weight_x) > 3:
         right_fit = np.polyfit(right_weight_y, right_weight_x, 2)
         
         # 테스트 출력
-        print('right fit =', right_fit)
+        # print('right fit =', right_fit)
     else:
         right_fit = None
 
@@ -685,7 +685,7 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
     right_line.current_fit = right_fit
 
     output = drawline(output, left_fit, right_fit)
-    print('lane detect result =', left_line.detected, right_line.detected)
+    # print('lane detect result =', left_line.detected, right_line.detected)
     return output
 
 
@@ -693,8 +693,8 @@ def find_LR_lines(binary_img, left_line, right_line):
 
 
 
-    print('left line detected =', left_line.detected)
-    print('right line detected =', right_line.detected)
+    # print('left line detected =', left_line.detected)
+    # print('right line detected =', right_line.detected)
 
     # if don't have lane lines info
     if (left_line.detected == False) or (right_line.detected == False):
@@ -732,6 +732,7 @@ def make_center(binary_img):
         msg_center = Float64()
         msg_center.data = centerx.item(120)
         pub_lane.publish(msg_center)
+        print('pub time =', rospy.get_rostime().secs, rospy.get_rostime().nsecs)
     return binary_img
 
 
@@ -746,6 +747,7 @@ def image_callback(msg):
     except CvBridgeError as e:
         print(e)
     else:
+        print('sub image at', rospy.get_rostime().secs, rospy.get_rostime().nsecs)
         resized = ready_process(cv2_img)
 
         lab = lab_combine(resized)
@@ -783,7 +785,7 @@ def image_listener():
     rospy.init_node('py_image_listener')
     # Setupt the subscription, camera/rb/image_raw is used in turtlebot_gazebo example
     #rospy.Subscriber("jetbot_camera/raw", Image, image_callback)
-    rospy.Subscriber("/rasp_cam_pub", Image, image_callback)
+    rospy.Subscriber("/rasp_cam_pub", Image, image_callback, queue_size=1)
     
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()

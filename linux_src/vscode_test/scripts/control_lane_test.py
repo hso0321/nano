@@ -10,6 +10,7 @@ lasterror = 0
 Max_vel = 0.12
 
 def cbFollowLane(desired_center):
+    print('sub data at', rospy.get_rostime().secs, rospy.get_rostime().nsecs)
     global lasterror
     center = desired_center.data
     
