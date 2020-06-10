@@ -8,6 +8,7 @@ from sensor_msgs.msg import Image # ROS Image message
 from std_msgs.msg import Float64
 from cv_bridge import CvBridge, CvBridgeError # ROS Image message -> OpenCV2 image converter
 import math
+import sys
 
 #Instantiate CV Bridge
 bridge = CvBridge()
@@ -126,7 +127,7 @@ def lab_combine(img): #, th_h, th_l, th_s):
 # .detected로 시작해서, startx를 구하고 currentx를 할당한뒤, .detected 갱신하고 .startx에 결과저장
 def find_first(b_img, left_line, right_line):
     output = cv2.cvtColor(b_img, cv2.COLOR_GRAY2RGB)
-    print('left detect =', left_line.detected, 'right detect =', right_line.detected)
+    # print('left detect =', left_line.detected, 'right detect =', right_line.detected)
     # 둘다 없을 때
 
     if (left_line.detected == False) and (right_line.detected == False):
@@ -143,7 +144,7 @@ def find_first(b_img, left_line, right_line):
             current_leftX = start_leftX
         else:
             current_leftX = None
-            print('left line fail to detect!')
+            # print('left line fail to detect!')
             # left_line.startx = None
             # detected는 여전히 false
 
@@ -151,7 +152,7 @@ def find_first(b_img, left_line, right_line):
             current_rightX = start_rightX
         else:
             current_rightX = None
-            print('right line fail to detect!')
+            # print('right line fail to detect!')
             # right_line.startx = None
 
 
@@ -168,7 +169,7 @@ def find_first(b_img, left_line, right_line):
         else:
             current_leftX = None
             left_line.startx = None
-            print('left line fail to detect!')
+            # print('left line fail to detect!')
         current_rightX = right_line.startx  # 왼쪽 구했으니 오른쪽은 가져옴
         
 
@@ -185,7 +186,7 @@ def find_first(b_img, left_line, right_line):
         else:
             current_rightX = None
             right_line.startx = None
-            print('right line fail to detect!')
+            # print('right line fail to detect!')
 
         current_leftX = left_line.startx 
 
@@ -210,10 +211,11 @@ def find_first(b_img, left_line, right_line):
                     current_leftX = None        # 오른쪽으로 갈거같으면, 왼쪽 삭제
                     left_line.startx = None
             except:
-                print('error current_leftX =', current_leftX, 'current_rightX =', current_rightX)
+            #     print('error current_leftX =', current_leftX, 'current_rightX =', current_rightX)
+                pass
     
     # 테스트용
-    print('left line current  =', current_leftX, 'right line current =', current_rightX)
+    # print('left line current  =', current_leftX, 'right line current =', current_rightX)
 
 
     # startx와 detected 할당
@@ -232,7 +234,7 @@ def find_first(b_img, left_line, right_line):
         right_line.startx = current_rightX
         right_line.detected = True
         cv2.circle(output, (int(current_rightX), 205), 10, (0, 100, 255), -1)      # 주황점
-        print('right line find!')
+        # print('right line find!')
     else:
         right_line.startx = None
         right_line.detected = False
@@ -356,11 +358,11 @@ def sliding_window(b_img, output, left_line, right_line, window_height):
                 # right_weight_y.append(int((win_y_low + win_y_high) / 2))
                 right_weight_y.append(int((win_y_low + new_high) / 2))
             # 중간 사라지게 테스트
-            else:
+            # else:
                 # print('window =', window)
                 # print('num right idx under cutline')
                 # print('num right inds =', num_right_inds)
-                print('win_right_lane', win_right_lane)
+                # print('win_right_lane', win_right_lane)
 
         # 첫번째 윈도우에서 첫 포인트 판별
         if window == 0:
@@ -462,8 +464,8 @@ def blind_search(b_img, left_line, right_line):
     if left_line.counter == 0:
         output = find_first(b_img, left_line, right_line)
         # print('counter =', left_line.counter)
-    else:
-        print('counter =', left_line.counter)
+    # else:
+    #     print('counter =', left_line.counter)
     output = sliding_window(b_img, output, left_line, right_line, window_height)
     
     # print('lane detect result =', left_line.detected, right_line.detected)
@@ -733,6 +735,7 @@ def make_center(binary_img):
         msg_center.data = centerx.item(120)
         pub_lane.publish(msg_center)
         print('pub time =', rospy.get_rostime().secs, rospy.get_rostime().nsecs)
+        print('\n')
     return binary_img
 
 
@@ -786,7 +789,9 @@ def image_listener():
     # Setupt the subscription, camera/rb/image_raw is used in turtlebot_gazebo example
     #rospy.Subscriber("jetbot_camera/raw", Image, image_callback)
     rospy.Subscriber("/rasp_cam_pub", Image, image_callback, queue_size=1)
-    
+    print('left line size =', sys.getsizeof(left_line))
+    print('right line size =', sys.getsizeof(right_line))
+
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
     cv2.destroyWindow("Image Display")
