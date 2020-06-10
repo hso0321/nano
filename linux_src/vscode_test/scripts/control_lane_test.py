@@ -29,7 +29,7 @@ def cbFollowLane(desired_center):
     twist.angular.y = 0
     twist.angular.z = -max(angular_z , -2.0) if angular_z < 0 else -min(angular_z, 2.0)
     pub_cmd_vel.publish(twist)
-
+    print('pub cmd vel at', rospy.get_rostime().secs, rospy.get_rostime().nsecs)
     return 
 
 def fnShutDown():
