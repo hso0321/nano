@@ -32,7 +32,7 @@ class Line:
         # was the line detected in the last iteration?
         self.detected = False
         # Set the width of the windows +/- margin
-        self.window_margin = 20
+        self.window_margin = 40
         # x values of the fitted line over the last n iterations
         self.prevx = []
         # polynomial coefficients for the most recent fit
@@ -65,7 +65,10 @@ def distort(img):
 
 
 def resize(image, size):
-    return cv2.resize(image, dsize=size)
+    if image.shape[0] == 480 and image.shape[1] == 640:
+        return image
+    else:
+        return cv2.resize(image, dsize=size)
 
 
 def ready_process(image):
@@ -119,7 +122,7 @@ def lab_combine(img): #, th_h, th_l, th_s):
     test_blur = cv2.GaussianBlur(single_line, (3, 3), 0)
     _, test_thresh = cv2.threshold(test_blur, 30, 255, cv2.THRESH_BINARY)
 
-    cv2.imshow('threshold', test_thresh)
+    # cv2.imshow('threshold', test_thresh)
     return test_thresh
     # return single_line
 
@@ -426,14 +429,14 @@ def sliding_window(b_img, output, left_line, right_line, window_height):
                     right_line.startx = None
 
     # weight x,y를 이용해 polyfit 계산
-    if len(left_weight_x) > 3:
+    if len(left_weight_x) >= 3:
         left_fit = np.polyfit(left_weight_y, left_weight_x, 2)
        
         # 테스트 출력
         # print('left fit =', left_fit)
     else:
         left_fit = None
-    if len(right_weight_x) > 3:
+    if len(right_weight_x) >= 3:
         right_fit = np.polyfit(right_weight_y, right_weight_x, 2)
         
         # 테스트 출력
@@ -612,7 +615,8 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
             if current_leftX is not None:
                 # 선이 중앙을 넘어가는 경우
                 if (current_leftX >= 160):
-                    right_line.startx = current_leftX
+                    # right_line.startx = current_leftX
+                    current_leftX = None
                     left_line.startx = None
                     left_line.detected = False
 
@@ -631,7 +635,8 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
 
             if current_rightX is not None:
                 if current_rightX <= 160:
-                    left_line.startx = current_rightX
+                    # left_line.startx = current_rightX
+                    current_rightX = None
                     right_line.startx = None
                     right_line.detected = False
 
@@ -668,14 +673,14 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
             right_line.startx = None
 
     # weight x,y를 이용해 polyfit 계산
-    if len(left_weight_x) > 3:
+    if len(left_weight_x) >= 3:
         left_fit = np.polyfit(left_weight_y, left_weight_x, 2)
        
         # 테스트 출력
         # print('left fit =', left_fit)
     else:
         left_fit = None
-    if len(right_weight_x) > 3:
+    if len(right_weight_x) >= 3:
         right_fit = np.polyfit(right_weight_y, right_weight_x, 2)
         
         # 테스트 출력
@@ -721,10 +726,10 @@ def make_center(binary_img):
         if right_fit is not None:
             centerx = np.mean([left_plotx, right_plotx], axis=0)
         else:
-            centerx = np.add(left_plotx, 75)
+            centerx = np.add(left_plotx, 70)        # 도로 사이간격을 140~150으로 했을 때
     else:
         if right_fit is not None:
-            centerx = np.subtract(right_plotx, 75)
+            centerx = np.subtract(right_plotx, 70)
         else:
             centerx = None
 
@@ -732,7 +737,7 @@ def make_center(binary_img):
         cv2.polylines(binary_img, np.int_([np.array([np.transpose(np.vstack([centerx, ploty]))])]), isClosed=False, color=(255, 0, 255), thickness=8)
 
         msg_center = Float64()
-        msg_center.data = centerx.item(120)
+        msg_center.data = centerx.item(30)
         pub_lane.publish(msg_center)
         print('pub time =', rospy.get_rostime().secs, rospy.get_rostime().nsecs)
         print('\n')
@@ -780,7 +785,7 @@ def image_callback(msg):
         # cv2.waitKey(30) 
         # Save your OpenCV2 image as a jpeg 
         # cv2.imwrite('camera_image.jpeg', cv2_img)
-        # cv2.imshow('result', result)
+        cv2.imshow('result', result)
 
 
 def image_listener():
