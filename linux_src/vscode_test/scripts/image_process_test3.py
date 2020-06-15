@@ -550,7 +550,7 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
 
 
         if current_leftX is not None:                                                               
-            if num_left_inds > new_min_pixel:     # 선이랑 윈도우랑 좀 겹쳐있으면
+            if num_left_inds >= new_min_pixel:     # 선이랑 윈도우랑 좀 겹쳐있으면
             # TODO 여기서 win_y_high 에서의 x값의 평균을 구하고자 한다.
                 if window == 0:         # 첫째 바닥값을 추가
                     left_weight_x.append(int(current_leftX))
@@ -583,7 +583,7 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
 
 
         if current_rightX is not None:
-            if num_right_inds > new_min_pixel:
+            if num_right_inds >= new_min_pixel:
                 if window == 0:
                     right_weight_x.append(int(current_rightX))
                     right_weight_y.append(int(win_y_high))
@@ -785,7 +785,11 @@ def image_callback(msg):
         # cv2.waitKey(30) 
         # Save your OpenCV2 image as a jpeg 
         # cv2.imwrite('camera_image.jpeg', cv2_img)
-        cv2.imshow('result', result)
+        # cv2.imshow('result', result)
+        print('left line size =', sys.getsizeof(left_line))
+        print('right line size =', sys.getsizeof(right_line))
+
+
 
 
 def image_listener():
@@ -794,8 +798,7 @@ def image_listener():
     # Setupt the subscription, camera/rb/image_raw is used in turtlebot_gazebo example
     #rospy.Subscriber("jetbot_camera/raw", Image, image_callback)
     rospy.Subscriber("/rasp_cam_pub", Image, image_callback, queue_size=1)
-    print('left line size =', sys.getsizeof(left_line))
-    print('right line size =', sys.getsizeof(right_line))
+
 
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
