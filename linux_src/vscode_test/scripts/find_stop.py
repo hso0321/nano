@@ -60,3 +60,9 @@ def bird_view(image):
     # return cv2.bitwise_not(warp(cv2.bitwise_not(image), bird_src, bird_dst))
     return warp(image, bird_src, bird_dst)
 
+def make_roi(image):
+    ROI = image[184:225, 47:269]
+    return ROI
+
+def choice_white(image):
+    
