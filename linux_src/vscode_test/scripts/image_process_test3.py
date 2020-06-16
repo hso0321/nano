@@ -90,7 +90,8 @@ def warp(image, source, destination):
 def bird_view(image):
     h, w = image.shape[:2]
     gap = 80
-    bird_src = np.float32([[105, 105], [40, 240], [285, 240], [220, 105]])
+    # bird_src = np.float32([[105, 105], [40, 240], [285, 240], [220, 105]])
+    bird_src = np.float32([[85, 105], [40, 240], [285, 240], [240, 105]])
     bird_dst = np.float32([[w/2 - gap, 0], [w/2 - gap, h], [w/2 + gap, h], [w/2 + gap, 0]])
     # return cv2.bitwise_not(warp(cv2.bitwise_not(image), bird_src, bird_dst))
     return warp(image, bird_src, bird_dst)

@@ -14,10 +14,6 @@ import math
 bridge = CvBridge()
 
 vertices = [(0, 0), (0, 115), (72, 240), (268, 240), (320, 152), (320, 0)]
-src = np.float32(((222, 250), (124, 480), (587, 480), (480, 250)))
-dst = np.float32([[210, 0], [210, 480], [640 - 210, 480], [640 - 210, 0]])
-mini_histo_roi = np.float32([[150, 400], [150, 480], [460, 480], [460, 400]])
-warped_roi = np.float32([[0, 0], [150, 480], [460, 480], [640, 0]])
 
 Matrix = np.array([[702.79573591, 0., 639.68721137], [0., 700.36468219, 351.49375006], [0., 0., 1.]], dtype=np.float32)
 Distortion = np.array([[-0.24512458, -0.09374123, -0.01451455, -0.00190292, 0.22375519]], dtype=np.float32)
@@ -46,7 +42,7 @@ class Line:
         self.endx = None
         # x values for detected line pixels
         self.allx = None
-        # y values for detected line pixels
+        # y values for detected line pixels51
         self.ally = None
         # road information
         self.road_inf = None
@@ -65,7 +61,7 @@ def distort(img):
 
 
 def resize(image, size):
-    if image.shape[0] == 480 and image.shape[1] == 640:
+    if image.shape[0] == 240 and image.shape[1] == 320:
         return image
     else:
         return cv2.resize(image, dsize=size)
@@ -90,7 +86,7 @@ def warp(image, source, destination):
 def bird_view(image):
     h, w = image.shape[:2]
     gap = 80
-    bird_src = np.float32([[105, 105], [40, 240], [285, 240], [220, 105]])
+    bird_src = np.float32([[84, 105], [40, 240], [285, 240], [240, 105]])
     bird_dst = np.float32([[w/2 - gap, 0], [w/2 - gap, h], [w/2 + gap, h], [w/2 + gap, 0]])
     # return cv2.bitwise_not(warp(cv2.bitwise_not(image), bird_src, bird_dst))
     return warp(image, bird_src, bird_dst)
@@ -129,7 +125,7 @@ def lab_combine(img): #, th_h, th_l, th_s):
 
 def find_line(b_img):
     histogram = np.sum(b_img[184:225, 47:270], axis=1)
-    print('shape histogram', histogram.shape)       # (41,)
+    # print('shape histogram', histogram.shape)       # (41,)
 
     maxpoint = np.argmax(histogram[21:])
     stop_msg = Bool()
@@ -143,7 +139,7 @@ def find_line(b_img):
 # .detected로 시작해서, startx를 구하고 currentx를 할당한뒤, .detected 갱신하고 .startx에 결과저장
 def find_first(b_img, left_line, right_line):
     output = cv2.cvtColor(b_img, cv2.COLOR_GRAY2RGB)
-    print('left detect =', left_line.detected, 'right detect =', right_line.detected)
+    print('BLIND, left detect =', left_line.detected, 'right detect =', right_line.detected)
     # 둘다 없을 때
 
     if (left_line.detected == False) and (right_line.detected == False):
@@ -359,7 +355,7 @@ def sliding_window(b_img, output, left_line, right_line, window_height):
                 # 윈도우 하얀애들 평균을 current x에 두고 weight x,y에 저장
             # inds가 모자라면 그대로 유지
             else:
-                print('num left idx under cutline')
+                print('num left idx under cutline', num_left_inds)
 
 
 
@@ -375,7 +371,7 @@ def sliding_window(b_img, output, left_line, right_line, window_height):
             # 중간 사라지게 테스트
             else:
                 # print('window =', window)
-                print('num right idx under cutline')
+                print('num right idx under cutline', num_right_inds)
                 # print('num right inds =', num_right_inds)
                 # print('win_right_lane', win_right_lane)
 
@@ -445,14 +441,14 @@ def sliding_window(b_img, output, left_line, right_line, window_height):
         left_fit = np.polyfit(left_weight_y, left_weight_x, 2)
        
         # 테스트 출력
-        print('left fit =', left_fit)
+        # print('left fit =', left_fit)
     else:
         left_fit = None
     if len(right_weight_x) >= 3:
         right_fit = np.polyfit(right_weight_y, right_weight_x, 2)
         
         # 테스트 출력
-        print('right fit =', right_fit)
+        # print('right fit =', right_fit)
     else:
         right_fit = None
 
@@ -478,9 +474,9 @@ def blind_search(b_img, left_line, right_line):
     nonzerox = np.array(nonzero[1])
     if left_line.counter == 0:
         output = find_first(b_img, left_line, right_line)
-        print('counter =', left_line.counter)
+        print('blind counter =', left_line.counter)
     else:
-        print('counter =', left_line.counter)
+        print('blind counter =', left_line.counter)
     output = sliding_window(b_img, output, left_line, right_line, window_height)
     
     print('lane detect result =', left_line.detected, right_line.detected)
@@ -489,7 +485,7 @@ def blind_search(b_img, left_line, right_line):
 
 
 def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 detected = True 일때
-    
+    print('PREV window')
     output = cv2.cvtColor(b_img, cv2.COLOR_GRAY2RGB)        # 색으로 결과를 확인하기 위한 이미지
 
     nonzero = b_img.nonzero()
@@ -690,14 +686,14 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
         left_fit = np.polyfit(left_weight_y, left_weight_x, 2)
        
         # 테스트 출력
-        print('left fit =', left_fit)
+        # print('left fit =', left_fit)
     else:
         left_fit = None
     if len(right_weight_x) >= 3:
         right_fit = np.polyfit(right_weight_y, right_weight_x, 2)
         
         # 테스트 출력
-        print('right fit =', right_fit)
+        # print('right fit =', right_fit)
     else:
         right_fit = None
 
@@ -713,8 +709,7 @@ def find_LR_lines(binary_img, left_line, right_line):
 
 
 
-    print('left line detected =', left_line.detected)
-    print('right line detected =', right_line.detected)
+    print('left line detected =', left_line.detected, 'right line detected =', right_line.detected)
 
     # if don't have lane lines info
     if (left_line.detected == False) or (right_line.detected == False):
@@ -750,8 +745,9 @@ def make_center(binary_img):
         cv2.polylines(binary_img, np.int_([np.array([np.transpose(np.vstack([centerx, ploty]))])]), isClosed=False, color=(255, 0, 255), thickness=8)
 
         msg_center = Float64()
-        msg_center.data = centerx.item(30)
+        msg_center.data = centerx.item(210)
         pub_lane.publish(msg_center)
+        print('center =', msg_center.data)
     return binary_img
 
 
@@ -798,7 +794,8 @@ def image_callback(msg):
         # Save your OpenCV2 image as a jpeg 
         # cv2.imwrite('camera_image.jpeg', cv2_img)
         # cv2.imshow('result', result)
-
+        # print('left line size =', sys.getsizeof(left_line))
+        # print('right line size =', sys.getsizeof(right_line))
 
 
 
@@ -808,7 +805,7 @@ def image_listener():
     rospy.init_node('py_image_listener')
     # Setupt the subscription, camera/rb/image_raw is used in turtlebot_gazebo example
     #rospy.Subscriber("jetbot_camera/raw", Image, image_callback)
-    rospy.Subscriber("/rasp_cam_pub", Image, image_callback)
+    # rospy.Subscriber("/rasp_cam_pub", Image, image_callback)
     
     rospy.Subscriber("/rasp_cam_pub", Image, image_callback, queue_size=1)
 
