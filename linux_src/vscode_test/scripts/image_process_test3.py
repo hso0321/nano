@@ -132,8 +132,9 @@ def find_line(b_img):
     print('shape histogram', histogram.shape)       # (41,)
 
     maxpoint = np.argmax(histogram[21:])
+    stop_msg = Bool()
+    stop_msg.data = False
     if(histogram(maxpoint) >= 30000):
-        stop_msg = Bool()
         stop_msg.data = True
         pub_stop.publish(stop_msg)
     return
@@ -584,12 +585,7 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
                     current_rightX = None
                     l_flag = 0
                 print('numbers of left index < min pixel')
-        else:
-            if l_flag == 0:
-                l_flag += 1
-            else:
-                current_rightX = None
-                l_flag =0
+
 
 
 
@@ -613,12 +609,7 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
                     current_rightX = None
                     r_flag = 0
                 print("numbers of right index < min pixel")
-        else:
-            if r_flag == 0:
-                r_flag += 1
-            else:
-                current_rightX = None
-                r_flag = 0  
+
         
         # 첫번째 윈도우에서 첫 포인트 판별
         if window == 0:
@@ -628,7 +619,7 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
                 if (current_leftX >= 160):
                     # right_line.startx = current_leftX
                     current_leftX = None
-                    left_line.startx = None
+                    # left_line.startx = None
                     left_line.detected = False
 
                     print('swap l to r')
@@ -637,7 +628,7 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
                 # 점선이나 선이 없을 때
                 if num_left_inds < min_num_pixel: 
                     left_line.detected = False
-                    left_line.startx = None
+                    # left_line.startx = None
                     print('left num idx =', num_left_inds)
             else:
                 if current_rightX is not None:
@@ -648,7 +639,7 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
                 if current_rightX <= 160:
                     # left_line.startx = current_rightX
                     current_rightX = None
-                    right_line.startx = None
+                    # right_line.startx = None
                     right_line.detected = False
 
                     print('swap r to l')
@@ -657,31 +648,42 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
 
                 if num_right_inds < min_num_pixel:
                     right_line.detected = False
-                    right_line.startx = None
+                    # right_line.startx = None
                     print('right num idx =', num_right_inds)
 
     if left_line.detected == False:
         if right_line.detected == False:            # 좌우 모두 없음
             if left_line.counter >= 5:
                 left_line.counter = 0
+                left_line.startx = None
             else:
                 left_line.counter += 1
-            left_line.startx = None
-            right_line.startx = None
+
+            if right_line.counter >= 5:
+                right_line.counter = 0
+                right_line.startx = None
+            else:
+                right_line.counter += 1
             
-        else:                                       # 좌측 없음
+            
+        else:                                       # 좌측 없음, 우측 없음
             if left_line.counter >= 5:
                 left_line.counter = 0
+                left_line.startx = None
+
             else:
                 left_line.counter += 1
-            left_line.startx = None
     else:                   
-        if right_line.detected == False:            # 우측 없음
+        if right_line.detected == False:            # 좌측 있음, 우측 없음
             if left_line.counter >= 5:
                 left_line.counter = 0
+                right_line.startx = None
+
             else:
                 left_line.counter += 1
-            right_line.startx = None
+        else:                                       # 좌우 모두 있음
+            left_line.counter = 0
+            right_line.counter = 0
 
     # weight x,y를 이용해 polyfit 계산
     if len(left_weight_x) >= 3:
@@ -737,10 +739,10 @@ def make_center(binary_img):
         if right_fit is not None:
             centerx = np.mean([left_plotx, right_plotx], axis=0)
         else:
-            centerx = np.add(left_plotx, 70)        # 도로 사이간격을 140~150으로 했을 때
+            centerx = np.add(left_plotx, 80)        # 도로 사이간격을 160으로 했을 때
     else:
         if right_fit is not None:
-            centerx = np.subtract(right_plotx, 70)
+            centerx = np.subtract(right_plotx, 80)
         else:
             centerx = None
 
