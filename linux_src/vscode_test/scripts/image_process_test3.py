@@ -6,6 +6,7 @@ import numpy as np                # numpy
 import cv2                        # OpenCV2
 from sensor_msgs.msg import Image # ROS Image message
 from std_msgs.msg import Float64
+from std_msgs.msg import Bool
 from cv_bridge import CvBridge, CvBridgeError # ROS Image message -> OpenCV2 image converter
 import math
 
@@ -31,7 +32,7 @@ class Line:
         # was the line detected in the last iteration?
         self.detected = False
         # Set the width of the windows +/- margin
-        self.window_margin = 20
+        self.window_margin = 40
         # x values of the fitted line over the last n iterations
         self.prevx = []
         # polynomial coefficients for the most recent fit
@@ -64,7 +65,10 @@ def distort(img):
 
 
 def resize(image, size):
-    return cv2.resize(image, dsize=size)
+    if image.shape[0] == 480 and image.shape[1] == 640:
+        return image
+    else:
+        return cv2.resize(image, dsize=size)
 
 
 def ready_process(image):
@@ -118,9 +122,21 @@ def lab_combine(img): #, th_h, th_l, th_s):
     test_blur = cv2.GaussianBlur(single_line, (3, 3), 0)
     _, test_thresh = cv2.threshold(test_blur, 30, 255, cv2.THRESH_BINARY)
 
-    cv2.imshow('threshold', test_thresh)
+    # cv2.imshow('threshold', test_thresh)
     return test_thresh
     # return single_line
+
+
+def find_line(b_img):
+    histogram = np.sum(b_img[184:225, 47:270], axis=1)
+    print('shape histogram', histogram.shape)       # (41,)
+
+    maxpoint = np.argmax(histogram[21:])
+    if(histogram(maxpoint) >= 30000):
+        stop_msg = Bool()
+        stop_msg.data = True
+        pub_stop.publish(stop_msg)
+    return
 
 
 # .detected로 시작해서, startx를 구하고 currentx를 할당한뒤, .detected 갱신하고 .startx에 결과저장
@@ -424,14 +440,14 @@ def sliding_window(b_img, output, left_line, right_line, window_height):
                     right_line.startx = None
 
     # weight x,y를 이용해 polyfit 계산
-    if len(left_weight_x) > 3:
+    if len(left_weight_x) >= 3:
         left_fit = np.polyfit(left_weight_y, left_weight_x, 2)
        
         # 테스트 출력
         print('left fit =', left_fit)
     else:
         left_fit = None
-    if len(right_weight_x) > 3:
+    if len(right_weight_x) >= 3:
         right_fit = np.polyfit(right_weight_y, right_weight_x, 2)
         
         # 테스트 출력
@@ -545,7 +561,7 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
 
 
         if current_leftX is not None:                                                               
-            if num_left_inds > new_min_pixel:     # 선이랑 윈도우랑 좀 겹쳐있으면
+            if num_left_inds >= new_min_pixel:     # 선이랑 윈도우랑 좀 겹쳐있으면
             # TODO 여기서 win_y_high 에서의 x값의 평균을 구하고자 한다.
                 if window == 0:         # 첫째 바닥값을 추가
                     left_weight_x.append(int(current_leftX))
@@ -578,7 +594,7 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
 
 
         if current_rightX is not None:
-            if num_right_inds > new_min_pixel:
+            if num_right_inds >= new_min_pixel:
                 if window == 0:
                     right_weight_x.append(int(current_rightX))
                     right_weight_y.append(int(win_y_high))
@@ -610,7 +626,8 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
             if current_leftX is not None:
                 # 선이 중앙을 넘어가는 경우
                 if (current_leftX >= 160):
-                    right_line.startx = current_leftX
+                    # right_line.startx = current_leftX
+                    current_leftX = None
                     left_line.startx = None
                     left_line.detected = False
 
@@ -629,7 +646,8 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
 
             if current_rightX is not None:
                 if current_rightX <= 160:
-                    left_line.startx = current_rightX
+                    # left_line.startx = current_rightX
+                    current_rightX = None
                     right_line.startx = None
                     right_line.detected = False
 
@@ -666,14 +684,14 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
             right_line.startx = None
 
     # weight x,y를 이용해 polyfit 계산
-    if len(left_weight_x) > 3:
+    if len(left_weight_x) >= 3:
         left_fit = np.polyfit(left_weight_y, left_weight_x, 2)
        
         # 테스트 출력
         print('left fit =', left_fit)
     else:
         left_fit = None
-    if len(right_weight_x) > 3:
+    if len(right_weight_x) >= 3:
         right_fit = np.polyfit(right_weight_y, right_weight_x, 2)
         
         # 테스트 출력
@@ -719,10 +737,10 @@ def make_center(binary_img):
         if right_fit is not None:
             centerx = np.mean([left_plotx, right_plotx], axis=0)
         else:
-            centerx = np.add(left_plotx, 75)
+            centerx = np.add(left_plotx, 70)        # 도로 사이간격을 140~150으로 했을 때
     else:
         if right_fit is not None:
-            centerx = np.subtract(right_plotx, 75)
+            centerx = np.subtract(right_plotx, 70)
         else:
             centerx = None
 
@@ -730,7 +748,7 @@ def make_center(binary_img):
         cv2.polylines(binary_img, np.int_([np.array([np.transpose(np.vstack([centerx, ploty]))])]), isClosed=False, color=(255, 0, 255), thickness=8)
 
         msg_center = Float64()
-        msg_center.data = centerx.item(120)
+        msg_center.data = centerx.item(30)
         pub_lane.publish(msg_center)
     return binary_img
 
@@ -754,6 +772,8 @@ def image_callback(msg):
         # warp
         warped = bird_view(lab)
 
+        find_line(warped)
+
         # # 이미지, 라인 두개를 넣고, 처리된 사진을 가져옴
         searching_img = find_LR_lines(warped, left_line, right_line)
         
@@ -776,6 +796,10 @@ def image_callback(msg):
         # Save your OpenCV2 image as a jpeg 
         # cv2.imwrite('camera_image.jpeg', cv2_img)
         # cv2.imshow('result', result)
+        print('left line size =', sys.getsizeof(left_line))
+        print('right line size =', sys.getsizeof(right_line))
+
+
 
 
 def image_listener():
@@ -785,6 +809,9 @@ def image_listener():
     #rospy.Subscriber("jetbot_camera/raw", Image, image_callback)
     rospy.Subscriber("/rasp_cam_pub", Image, image_callback)
     
+    rospy.Subscriber("/rasp_cam_pub", Image, image_callback, queue_size=1)
+
+
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
     cv2.destroyWindow("Image Display")
@@ -795,4 +822,6 @@ if __name__ == '__main__':
     pub_lane = rospy.Publisher("/detect/lane", Float64, queue_size=1)
     test_pub = rospy.Publisher("test_result", Image, queue_size=1)
     test1_pub = rospy.Publisher("test_threshold", Image, queue_size=1)
+    pub_stop = rospy.Publisher("/detect/stop", Bool, queue_size=1)
+
     image_listener()
