@@ -6,6 +6,7 @@ import numpy as np                # numpy
 import cv2                        # OpenCV2
 from sensor_msgs.msg import Image # ROS Image message
 from std_msgs.msg import Float64
+from std_msgs.msg import Bool
 from cv_bridge import CvBridge, CvBridgeError # ROS Image message -> OpenCV2 image converter
 import math
 import sys
@@ -125,6 +126,18 @@ def lab_combine(img): #, th_h, th_l, th_s):
     # cv2.imshow('threshold', test_thresh)
     return test_thresh
     # return single_line
+
+
+def find_line(b_img):
+    histogram = np.sum(b_img[184:225, 47:270], axis=1)
+    print('shape histogram', histogram.shape)       # (41,)
+
+    maxpoint = np.argmax(histogram[21:])
+    if(histogram(maxpoint) >= 30000):
+        stop_msg = Bool()
+        stop_msg.data = True
+        pub_stop.publish(stop_msg)
+    return
 
 
 # .detected로 시작해서, startx를 구하고 currentx를 할당한뒤, .detected 갱신하고 .startx에 결과저장
@@ -764,6 +777,8 @@ def image_callback(msg):
         # warp
         warped = bird_view(lab)
 
+        find_line(warped)
+
         # # 이미지, 라인 두개를 넣고, 처리된 사진을 가져옴
         searching_img = find_LR_lines(warped, left_line, right_line)
         
@@ -810,4 +825,6 @@ if __name__ == '__main__':
     pub_lane = rospy.Publisher("/detect/lane", Float64, queue_size=1)
     test_pub = rospy.Publisher("test_result", Image, queue_size=1)
     test1_pub = rospy.Publisher("test_threshold", Image, queue_size=1)
+    pub_stop = rospy.Publisher("/detect/stop", Bool, queue_size=1)
+
     image_listener()

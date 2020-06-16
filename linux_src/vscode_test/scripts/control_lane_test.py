@@ -4,6 +4,7 @@
 import rospy
 import numpy as np
 from std_msgs.msg import Float64
+from std_msgs.msg import Bool
 from geometry_msgs.msg import Twist
 
 lasterror = 0
@@ -45,13 +46,17 @@ def fnShutDown():
     twist.angular.z = 0
     pub_cmd_vel.publish(twist)    
 
+    return
 
+def cbStopLane():
+    fnShutDown()
     return
 
 if __name__ == '__main__':
 
     rospy.init_node('control_lane')
     sub_lane = rospy.Subscriber('/detect/lane', Float64, cbFollowLane, queue_size=1)
+    stop = rospy.Subscriber('/detect/stop', Bool, cbStopLane, queue_size=1)
     pub_cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
     rospy.on_shutdown(fnShutDown)
     rospy.spin()
