@@ -50,7 +50,7 @@ def fnShutDown():
 
 def cbStopLane(bool_msg):
     bool_msg = Bool()
-    if bool_msg.data == False:
+    if bool_msg.data == True:
         fnShutDown()
     return
 
