@@ -134,7 +134,7 @@ def find_line(b_img):
     maxpoint = np.argmax(histogram[21:])
     stop_msg = Bool()
     stop_msg.data = False
-    if(histogram(maxpoint) >= 30000):
+    if(histogram[maxpoint] >= 30000):
         stop_msg.data = True
         pub_stop.publish(stop_msg)
     return
@@ -798,8 +798,7 @@ def image_callback(msg):
         # Save your OpenCV2 image as a jpeg 
         # cv2.imwrite('camera_image.jpeg', cv2_img)
         # cv2.imshow('result', result)
-        print('left line size =', sys.getsizeof(left_line))
-        print('right line size =', sys.getsizeof(right_line))
+
 
 
 
