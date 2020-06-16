@@ -18,6 +18,7 @@ Min_ang = 2.0
 # stop, low_vel(limit_vel), low_vel(child) high_vel, 
 # default is 1
 cases = [1,1,1,1]
+
 # depth of class
 # child, limit_speed, lottery, park, people, tunnel, turn_limit, turtle, unlimit, red_light, green_light
 # default is 0
