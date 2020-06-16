@@ -15,10 +15,13 @@ Min_lin = 0.2
 Min_ang = 2.0
 
 # driving flags
-# stop, low_vel, hight_vel, nomal_vel
+# stop, low_vel(limit_vel), low_vel(child) high_vel, 
+# default is 1
 cases = [1,1,1,1]
+
 # depth of class
 # child, limit_speed, lottery, park, people, tunnel, turn_limit, turtle, unlimit, red_light, green_light
+# default is 0
 depth_class = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 def cbFollowLane(desired_center):
@@ -63,54 +66,79 @@ def depth_call_back(msg):
 
     # box number in ymax(in first box)
     for box in range(0, msg.bounding_boxes[0].ymax) :
-        # below 500 depth
-        if(msg.bounding_boxes[box].xmax <500):
             # save depth
             if msg.bounding_boxes[box].Class == 'child':
                 depth_class[0] = msg.bounding_boxes[box].xmax
-            if msg.bounding_boxes[box].Class == 'limit_speed':
-                depth_class[1] = msg.bounding_boxes[box].xmax
-            if msg.bounding_boxes[box].Class == 'lottery':
-                depth_class[2] = msg.bounding_boxes[box].xmax
-            if msg.bounding_boxes[box].Class == 'park':
-                depth_class[3] = msg.bounding_boxes[box].xmax
-            if msg.bounding_boxes[box].Class == 'people':
-                depth_class[4] = msg.bounding_boxes[box].xmax
-            if msg.bounding_boxes[box].Class == 'tunnel':
-                depth_class[5] = msg.bounding_boxes[box].xmax
-            if msg.bounding_boxes[box].Class == 'turn_limit':
-                depth_class[6] = msg.bounding_boxes[box].xmax
-            if msg.bounding_boxes[box].Class == 'turtle':
-                depth_class[7] = msg.bounding_boxes[box].xmax
-            if msg.bounding_boxes[box].Class == 'unlimit':
-                depth_class[8] = msg.bounding_boxes[box].xmax
-            if msg.bounding_boxes[box].Class == 'red_light':
-                depth_class[9] = msg.bounding_boxes[box].xmax
-            if msg.bounding_boxes[box].Class == 'green_light':
-                depth_class[10] = msg.bounding_boxes[box].xmax
-        else :
-            if msg.bounding_boxes[box].Class == 'child':
+            else:
                 depth_class[0] = 0
             if msg.bounding_boxes[box].Class == 'limit_speed':
+                depth_class[1] = msg.bounding_boxes[box].xmax
+            else:
                 depth_class[1] = 0
             if msg.bounding_boxes[box].Class == 'lottery':
+                depth_class[2] = msg.bounding_boxes[box].xmax
+            else:
                 depth_class[2] = 0
             if msg.bounding_boxes[box].Class == 'park':
+                depth_class[3] = msg.bounding_boxes[box].xmax
+            else:
                 depth_class[3] = 0
             if msg.bounding_boxes[box].Class == 'people':
+                depth_class[4] = msg.bounding_boxes[box].xmax
+            else:
                 depth_class[4] = 0
             if msg.bounding_boxes[box].Class == 'tunnel':
+                depth_class[5] = msg.bounding_boxes[box].xmax
+            else:
                 depth_class[5] = 0
             if msg.bounding_boxes[box].Class == 'turn_limit':
+                depth_class[6] = msg.bounding_boxes[box].xmax
+            else:
                 depth_class[6] = 0
             if msg.bounding_boxes[box].Class == 'turtle':
+                depth_class[7] = msg.bounding_boxes[box].xmax
+            else:
                 depth_class[7] = 0
             if msg.bounding_boxes[box].Class == 'unlimit':
+                depth_class[8] = msg.bounding_boxes[box].xmax
+            else:
                 depth_class[8] = 0
             if msg.bounding_boxes[box].Class == 'red_light':
+                depth_class[9] = msg.bounding_boxes[box].xmax
+            else:
                 depth_class[9] = 0
             if msg.bounding_boxes[box].Class == 'green_light':
+                depth_class[10] = msg.bounding_boxes[box].xmax
+            else:
                 depth_class[10] = 0
+        
+    # scenario
+    # 1.stop people
+    if depth_class[4] > 300 :
+        cases[0] = 0
+    else :
+        cases[0] = 1
+
+    # 2. low_vel limit_speed
+    if depth_class[1] > 300 :
+        cases[1] = 0
+    else :
+        cases[1] = 1
+
+    # 3. low_vel child
+    if depth_class[0] > 300 :
+        cases[2] = 0
+    else :
+        cases[2] = 1
+
+    # 4. high_vel unlimit
+    if depth_class[8] > 300 :
+        cases[3] = 0
+    else :
+        cases[3] = 1
+
+    print("{}, {}, {}, {}".format(cases[0], cases[1], cases[2], cases[3]))
+
     #  for debug
     for i in range(0, len(depth_class)): 
         if depth_class[i] != 0 :
@@ -121,7 +149,6 @@ def depth_call_back(msg):
 def cbStopLane(bool_msg):
     bool_msg = Bool()
     if bool_msg.data == True:
-        print('bool_msg data =', bool_msg.data)
         fnShutDown()
     return
 
