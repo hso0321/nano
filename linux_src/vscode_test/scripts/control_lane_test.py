@@ -121,6 +121,7 @@ def depth_call_back(msg):
 def cbStopLane(bool_msg):
     bool_msg = Bool()
     if bool_msg.data == True:
+        print('bool_msg data =', bool_msg.data)
         fnShutDown()
     return
 
