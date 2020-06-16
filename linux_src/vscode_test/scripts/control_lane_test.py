@@ -48,8 +48,10 @@ def fnShutDown():
 
     return
 
-def cbStopLane():
-    fnShutDown()
+def cbStopLane(bool_msg):
+    bool_msg = Bool()
+    if bool_msg.data == False:
+        fnShutDown()
     return
 
 if __name__ == '__main__':
