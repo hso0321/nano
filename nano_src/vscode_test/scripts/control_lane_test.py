@@ -6,13 +6,20 @@ import numpy as np
 from std_msgs.msg import Float64
 from std_msgs.msg import Bool
 from geometry_msgs.msg import Twist
-# from darknet_ros_msgs import BoundingBoxes
+# from darknet_ros_msgs import bounding_boxes
 from darknet_ros_msgs.msg import BoundingBoxes
 
 lasterror = 0
 Max_vel = 0.12
 Min_lin = 0.2
 Min_ang = 2.0
+
+# driving flags
+# stop, low_vel, hight_vel, nomal_vel
+cases = [1,1,1,1]
+# depth of class
+# child, limit_speed, lottery, park, people, tunnel, turn_limit, turtle, unlimit, red_light, green_light
+depth_class = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 def cbFollowLane(desired_center):
     global lasterror
@@ -48,12 +55,67 @@ def fnShutDown():
     twist.angular.z = 0
     pub_cmd_vel.publish(twist)
 
-
     return
 
 def depth_call_back(msg):
-    print("subscribe success")
-    print(msg.bounding_boxes[0].ymax)
+    # for using global_val
+    global cases, depth_class
+
+    # box number in ymax(in first box)
+    for box in range(0, msg.bounding_boxes[0].ymax) :
+        # below 500 depth
+        if(msg.bounding_boxes[box].xmax <500):
+            # save depth
+            if msg.bounding_boxes[box].Class == 'child':
+                depth_class[0] = msg.bounding_boxes[box].xmax
+            if msg.bounding_boxes[box].Class == 'limit_speed':
+                depth_class[1] = msg.bounding_boxes[box].xmax
+            if msg.bounding_boxes[box].Class == 'lottery':
+                depth_class[2] = msg.bounding_boxes[box].xmax
+            if msg.bounding_boxes[box].Class == 'park':
+                depth_class[3] = msg.bounding_boxes[box].xmax
+            if msg.bounding_boxes[box].Class == 'people':
+                depth_class[4] = msg.bounding_boxes[box].xmax
+            if msg.bounding_boxes[box].Class == 'tunnel':
+                depth_class[5] = msg.bounding_boxes[box].xmax
+            if msg.bounding_boxes[box].Class == 'turn_limit':
+                depth_class[6] = msg.bounding_boxes[box].xmax
+            if msg.bounding_boxes[box].Class == 'turtle':
+                depth_class[7] = msg.bounding_boxes[box].xmax
+            if msg.bounding_boxes[box].Class == 'unlimit':
+                depth_class[8] = msg.bounding_boxes[box].xmax
+            if msg.bounding_boxes[box].Class == 'red_light':
+                depth_class[9] = msg.bounding_boxes[box].xmax
+            if msg.bounding_boxes[box].Class == 'green_light':
+                depth_class[10] = msg.bounding_boxes[box].xmax
+        else :
+            if msg.bounding_boxes[box].Class == 'child':
+                depth_class[0] = 0
+            if msg.bounding_boxes[box].Class == 'limit_speed':
+                depth_class[1] = 0
+            if msg.bounding_boxes[box].Class == 'lottery':
+                depth_class[2] = 0
+            if msg.bounding_boxes[box].Class == 'park':
+                depth_class[3] = 0
+            if msg.bounding_boxes[box].Class == 'people':
+                depth_class[4] = 0
+            if msg.bounding_boxes[box].Class == 'tunnel':
+                depth_class[5] = 0
+            if msg.bounding_boxes[box].Class == 'turn_limit':
+                depth_class[6] = 0
+            if msg.bounding_boxes[box].Class == 'turtle':
+                depth_class[7] = 0
+            if msg.bounding_boxes[box].Class == 'unlimit':
+                depth_class[8] = 0
+            if msg.bounding_boxes[box].Class == 'red_light':
+                depth_class[9] = 0
+            if msg.bounding_boxes[box].Class == 'green_light':
+                depth_class[10] = 0
+    #  for debug
+    for i in range(0, len(depth_class)): 
+        if depth_class[i] != 0 :
+            print(depth_class[i])
+
     return
 
 def cbStopLane(bool_msg):
