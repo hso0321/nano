@@ -12,7 +12,7 @@ from darknet_ros_msgs.msg import BoundingBoxes
 lasterror = 0
 Max_vel = 0.12
 Min_lin = 0.2
-Min_ang = 2.0
+Min_ang = 3.0
 stop_count = 0
 reset_count = 0
 vertical_flag = 0
@@ -48,7 +48,7 @@ def cbFollowLane(desired_center):
 def fnDrive(center,Max_vel=Max_vel, Min_lin=Min_lin, Min_ang=Min_ang):
     global lasterror
 
-    error = center - 160
+    error = center - 145
 
     Kp = 0.0025
     Kd = 0.007
@@ -65,7 +65,9 @@ def fnDrive(center,Max_vel=Max_vel, Min_lin=Min_lin, Min_ang=Min_ang):
     twist.angular.z = -max(angular_z , -Min_ang) if angular_z < 0 else -min(angular_z, Min_ang)
     pub_cmd_vel.publish(twist)
 
-    print('pub cmd vel at', rospy.get_rostime().secs, rospy.get_rostime().nsecs,'\n')
+    print('pub cmd vel at', rospy.get_rostime().secs, rospy.get_rostime().nsecs)
+    print('linear =', twist.linear.x, 'anglur =', twist.angular.z)
+    print(' ')
 
     return 
 
