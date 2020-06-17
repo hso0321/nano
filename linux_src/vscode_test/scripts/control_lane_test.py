@@ -13,6 +13,9 @@ lasterror = 0
 Max_vel = 0.12
 Min_lin = 0.2
 Min_ang = 2.0
+stop_count = 0
+reset_count = 0
+vertical_flag = 0
 
 # driving flags
 # stop, low_vel(limit_vel), low_vel(child) high_vel, 
@@ -25,9 +28,26 @@ cases = [1,1,1,1]
 depth_class = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 def cbFollowLane(desired_center):
-    global lasterror
     center = desired_center.data
-    
+
+    if vertical_flag == 1:
+        fnShutDown()
+    else:
+        if cases[0] == 0:       # find people
+            fnShutDown()
+        elif cases[1] == 0:     # limit low_vel
+            fnDrive(center, Max_vel=1.5*Max_vel,Min_lin=1.5*Min_lin)
+        elif cases[2] == 0:     # children zone
+            fnDrive(center, Max_vel=0.7*Max_vel)
+        else:
+            fnDrive(center)
+        
+    return 
+
+
+def fnDrive(center,Max_vel=Max_vel, Min_lin=Min_lin, Min_ang=Min_ang):
+    global lasterror
+
     error = center - 160
 
     Kp = 0.0025
@@ -46,7 +66,9 @@ def cbFollowLane(desired_center):
     pub_cmd_vel.publish(twist)
 
     print('pub cmd vel at', rospy.get_rostime().secs, rospy.get_rostime().nsecs,'\n')
+
     return 
+
 
 def fnShutDown():
     twist = Twist()
@@ -133,7 +155,7 @@ def depth_call_back(msg):
         cases[2] = 1
 
     # 4. high_vel unlimit
-    if 0 < depth_class[8] <= 300 :
+    if 0 < depth_class[8] <= 500 :
         cases[3] = 0
     else :
         cases[3] = 1
@@ -149,9 +171,21 @@ def depth_call_back(msg):
     return
 
 def cbStopLane(bool_msg):
+    global reset_count, stop_count
     bool_msg = Bool()
     if bool_msg.data == True:
-        fnShutDown()
+        if stop_count < 200:
+            vertical_flag = 1
+            stop_count += 1
+        else:
+            vertical_flag = 0
+            if reset_count < 100:
+                reset_count += 1
+            else:
+                stop_count = 0
+                reset_count = 0
+
+            
     return
 
 if __name__ == '__main__':
