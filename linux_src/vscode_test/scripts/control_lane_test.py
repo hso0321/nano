@@ -114,25 +114,26 @@ def depth_call_back(msg):
         
     # scenario
     # 1.stop people
-    if depth_class[4] > 300 :
+    if 0 < depth_class[4] <= 500 :
         cases[0] = 0
+        print("Be careful!")
     else :
         cases[0] = 1
 
     # 2. low_vel limit_speed
-    if depth_class[1] > 300 :
+    if 0 < depth_class[1] <= 500 :
         cases[1] = 0
     else :
         cases[1] = 1
 
     # 3. low_vel child
-    if depth_class[0] > 300 :
+    if 0 < depth_class[0] <= 500 :
         cases[2] = 0
     else :
         cases[2] = 1
 
     # 4. high_vel unlimit
-    if depth_class[8] > 300 :
+    if 0 < depth_class[8] <= 300 :
         cases[3] = 0
     else :
         cases[3] = 1
@@ -143,6 +144,7 @@ def depth_call_back(msg):
     for i in range(0, len(depth_class)): 
         if depth_class[i] != 0 :
             print(depth_class[i])
+            print("index : {}".format(i))
 
     return
 
