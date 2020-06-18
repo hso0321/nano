@@ -6,24 +6,19 @@ import numpy as np
 from std_msgs.msg import Float64
 from std_msgs.msg import Bool
 from geometry_msgs.msg import Twist
-# from darknet_ros_msgs import bounding_boxes
 from darknet_ros_msgs.msg import BoundingBoxes
 
 lasterror = 0
 Max_vel = 0.12
 Min_lin = 0.2
-# Min_ang = 2.0
-Min_ang = 4.0
-stop_count = 0
-reset_count = 0
-vertical_flag = 0
-
-val = 0
+Min_ang = 2.0
 
 # driving flags
-# stop, low_vel(limit_vel), low_vel(child) high_vel, 
 # default is 1
-cases = [1,1,1,1]
+# turn_limit, limit_speed, child, unlimit, lottery, turnel
+cases_static = [1,1,1,1,1,1]
+# people, turtle, red_light(traffic), green(traffic)
+cases_dynamic= [1,1,1,1]
 
 # depth of class
 # child, limit_speed, lottery, park, people, tunnel, turn_limit, turtle, unlimit, red_light, green_light
@@ -31,35 +26,12 @@ cases = [1,1,1,1]
 depth_class = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 def cbFollowLane(desired_center):
-    center = desired_center.data
-
-    if vertical_flag == 1:
-        print('find horizon line')
-        fnShutDown()
-    else:
-        if cases[0] == 0:       # find people
-            print('meet people!')
-            fnShutDown()
-        elif cases[1] == 0:     # limit low_vel
-            print('limit lowest_vel!')
-            fnDrive(center, Max_vel=1.5*Max_vel,Min_lin=1.5*Min_lin)
-        elif cases[2] == 0:     # children zone
-            print('children zone')
-            fnDrive(center, Max_vel=0.7*Max_vel)
-        else:
-            print('just drive!')
-            fnDrive(center)
-        
-    return 
-
-
-def fnDrive(center,Max_vel=Max_vel, Min_lin=Min_lin, Min_ang=Min_ang):
     global lasterror
+    center = desired_center.data
+    
+    error = center - 160
 
-    error = center - 150
-
-    # Kp = 0.0025
-    Kp = 0.005
+    Kp = 0.0025
     Kd = 0.007
 
     angular_z = Kp * error + Kd * (error - lasterror)
@@ -74,12 +46,8 @@ def fnDrive(center,Max_vel=Max_vel, Min_lin=Min_lin, Min_ang=Min_ang):
     twist.angular.z = -max(angular_z , -Min_ang) if angular_z < 0 else -min(angular_z, Min_ang)
     pub_cmd_vel.publish(twist)
 
-    print('pub cmd vel at', rospy.get_rostime().secs, rospy.get_rostime().nsecs)
-    print('linear =', twist.linear.x, 'anglur =', twist.angular.z)
-    print(' ')
-
+    print('pub cmd vel at', rospy.get_rostime().secs, rospy.get_rostime().nsecs,'\n')
     return 
-
 
 def fnShutDown():
     twist = Twist()
@@ -146,31 +114,58 @@ def depth_call_back(msg):
                 depth_class[10] = 0
         
     # scenario
-    # 1.stop people
+    # static
+
+    # 1.turn_limit
     if 0 < depth_class[4] <= 500 :
-        cases[0] = 0
-        print("Be careful!")
-    else :
-        cases[0] = 1
-
-    # 2. low_vel limit_speed
+        cases_static[0] = 0
+    
+    # 2.limit_speed
     if 0 < depth_class[1] <= 500 :
-        cases[1] = 0
-    else :
-        cases[1] = 1
+        cases_static[1] = 0
 
-    # 3. low_vel child
+    # 3.child
     if 0 < depth_class[0] <= 500 :
-        cases[2] = 0
-    else :
-        cases[2] = 1
+        cases_static[2] = 0
 
-    # 4. high_vel unlimit
+    # 4.unlimit
     if 0 < depth_class[8] <= 500 :
-        cases[3] = 0
-    else :
-        cases[3] = 1
+        cases_static[3] = 0
 
+    # 5.lottery
+    if 0 < depth_class[2] <= 500 :
+        cases_static[4] = 0
+
+    # 6.turnel
+    if 0 < depth_class[5] <= 500 :
+        cases_static[5] = 0
+
+    # dynamic
+
+    # 1.people
+    if 0 < depth_class[4] <= 500 :
+        cases_dynamic[0] = 0
+    else :
+        cases_dynamic[0] = 1
+
+    # 2.turtle
+    if 0 < depth_class[7] <= 500 :
+        cases_dynamic[1] = 0
+    else :
+        cases_dynamic[1] = 1
+
+    # 3.red_light(taffic)
+    if 0 < depth_class[9] <= 500 :
+        cases_dynamic[2] = 0
+    else :
+        cases_dynamic[2] = 1
+
+    # 4.green_light(traffic)
+    if 0 < depth_class[10] <= 500 :
+        cases_dynamic[3] = 0
+    else :
+        cases_dynamic[3] = 1
+    
     print("{}, {}, {}, {}".format(cases[0], cases[1], cases[2], cases[3]))
 
     #  for debug
@@ -182,14 +177,9 @@ def depth_call_back(msg):
     return
 
 def cbStopLane(bool_msg):
-    global reset_count, stop_count
     bool_msg = Bool()
-    print('stop lane signal')
     if bool_msg.data == True:
-        vertical_flag = 1
-
-
-            
+        fnShutDown()
     return
 
 if __name__ == '__main__':

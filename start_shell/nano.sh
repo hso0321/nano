@@ -1,12 +1,11 @@
 #!/bin/bash
  
 raspi_cam="rosrun rasp_cam rasp_cam"
-t265="roslaunch realsense2_camera rs_t265.launch camera:=cam_2 serial_no:=948422110711"
-d435i="roslaunch realsense2_camera rs_camera.launch camera:=cam_1 serial_no:=923322071436"
+d435i="roslaunch realsense2_camera rs_camera.launch camera:=cam_1"
 turtlebot="roslaunch turtlebot3_bringup turtlebot3_core.launch"
 image_processing="rosrun vscode_test image_process_test3.py"
 
-/bin/bash $raspi_cam&sleep 5&&$t265&sleep 10&&$d435i&sleep 15&&$turtlebot&sleep 20&&$image_processing
+/bin/bash $raspi_cam&sleep 5&&$d435i&sleep 10&&$turtlebot&sleep 15&&$image_processing
 
 pkill -9 -ef 'ros'
 exit 0
