@@ -1,24 +1,29 @@
-ROS와 물체인식을 이용한 자율주행 시스템
+# ROS와 물체인식을 이용한 자율주행 시스템
 
-주제  
- jetson nano 보드를 이용한 간이 차체를 제작하여 자율주행을 합니다. 자율주행을 위해서는 많은 센서가 필요하고 유기적으로 작동을 하기 위해 ROS를 사용합니다. 구체적으로 차체에 장착하는 모듈은 raspberry pi camera를 이용하여 도로를 인식하고, d435i를 이용하여 차량 전방의 물체를 인식하고 거리(depth)를 측정합니다. 동시에 Server와 차량은 통신을 실시간으로 합니다. Server는 차체에서 송신하는 데이터를 받아 미리 학습된 AI(yolov3-tiny)를 통해 객체를 실시간으로 인식하여 주행에 대한 판단을 전송합니다. 마지막으로 차량은 이 데이터를 수신하여 자율주행을 합니다.
+## <b> 주제 </b>
+ jetson nano 보드에 line-detecting, deep-learning을 통한 객체인식을 이용한 모형 자동차를 제작하여 자율주행을 합니다.
+## <b> 세부구성 </b> 
+  ROS:자율주행을 위해서는 많은 센서가 필요합니다. 이런 센서들을 통합적이고 유기적으로 작동을 하기 위해 ROS를 사용했습니다.  
+  image-sensor: 구체적으로 차체에 장착하는 모듈은 Sony IMX219(비교적 싼가격, 좋은 저조도 특성)을 이용하여 도로를 인식하고, d435i(접근성이 좋은 depth카메라)를 이용하여 차량 전방의 물체를 인식하고 거리(depth)를 측정합니다.  
+  동시에 Server와 차량은 통신을 실시간으로 합니다. Server는 차체에서 송신하는 데이터를 받아 미리 학습된 AI(yolov3-tiny)를 통해 객체를 실시간으로 인식하여 주행에 대한 판단을 전송합니다. 마지막으로 차량은 이 데이터를 수신하여 자율주행을 합니다.
 
-개발환경  
+## <b>개발환경  </b>  
  Server : Ubuntu18.04.4 LTS / GeForce GTX 2080 super / Intel Core i7-9700  
  Board  : Nvidia jetson nano / RaspberryPi CameraV2 / d435i(Intel)  
 
-사용 기술  
+## <b>사용 기술 </b>  
  머신러닝 플랫폼 : darnet  
  인공지능 모델   : yolov3-tiny  
  사용 라이브러리 : OpenCV 3.4.2(Server, darkent 프레임워크 사용을 위해), OpenCV 4.1.1(jetson nano보드에서 사용), ROS melodic  
  개발언어 : Python2.7, C++, Matlab  
  개발 지원 도구  : GitLab, Git, Anaconda, VScode, PyCham  
 
-내용  
+## <b>내용  </b>  
  linux_src  : Server에서 사용하는 ROS source  
  nano_src   : jetson nano에서 사용하는 ROS source  
  start_shell: 시스템을 구동하는데 기본적으로 필요한 ROS 명령어를 간단한 shell로 묶어놓은 파일  
 
+## <b>주의점 </b>  
  ROS source는 ~/catkin/src 밑에 복사해서 사용  
  start_shell은 아무곳에서나 실행
 
@@ -28,6 +33,7 @@ yolov3-tiny를 사용한 이유는 실시간으로 서버와 이미지를 송수
 
 학습된 데이터는 총 656장의 이미지를 이용하였습니다. 학습 횟수는 약 20000번 정도의 학습을 했습니다.  
 
+## <b>참고 </b>
 아래의 url을 참고하여 다운 받으시면 됩니다.  
 https://taemian.tistory.com/6
 
