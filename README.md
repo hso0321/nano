@@ -32,5 +32,5 @@ yolov3-tiny를 사용한 이유는 실시간으로 서버와 이미지를 송수
 https://taemian.tistory.com/6
 
 <div>
-<img width="200" src="https://user-images.githubusercontent.com/61136992/84970278-4c614100-b155-11ea-8b98-d66856f9cd48.png">
+<img width="800" height="800" src="https://user-images.githubusercontent.com/61136992/84970278-4c614100-b155-11ea-8b98-d66856f9cd48.png">
 </div>
