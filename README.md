@@ -9,7 +9,7 @@
 
 ## <b>개발환경  </b>  
  Server : Ubuntu18.04.4 LTS / GeForce GTX 2080 super / Intel Core i7-9700  
- Board  : Nvidia jetson nano / RaspberryPi CameraV2 / d435i(Intel)  
+ Board  : Nvidia jetson nano / Sony IMX219 / d435i(Intel)  
 
 ## <b>사용 기술 </b>  
  머신러닝 플랫폼 : darnet  
