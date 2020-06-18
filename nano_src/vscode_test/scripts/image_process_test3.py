@@ -15,11 +15,11 @@ bridge = CvBridge()
 
 vertices = [(0, 0), (0, 115), (72, 240), (268, 240), (320, 152), (320, 0)]
 
-# Matrix = np.array([[702.79573591, 0., 639.68721137], [0., 700.36468219, 351.49375006], [0., 0., 1.]], dtype=np.float32)
-# Distortion = np.array([[-0.24512458, -0.09374123, -0.01451455, -0.00190292, 0.22375519]], dtype=np.float32)
+Matrix = np.array([[702.79573591, 0., 639.68721137], [0., 700.36468219, 351.49375006], [0., 0., 1.]], dtype=np.float32)
+Distortion = np.array([[-0.24512458, -0.09374123, -0.01451455, -0.00190292, 0.22375519]], dtype=np.float32)
 
-Matrix = np.array([[157.51653262, 0., 317.21445006], [0., 208.73433488, 294.81361953], [0., 0., 1.]], dtype=np.float32)
-Distortion = np.array([[-0.05351266, 0.00367534, -0.00636313, 0.00040338, -0.00022917]], dtype=np.float32)
+# Matrix = np.array([[157.51653262, 0., 317.21445006], [0., 208.73433488, 294.81361953], [0., 0., 1.]], dtype=np.float32)
+# Distortion = np.array([[-0.05351266, 0.00367534, -0.00636313, 0.00040338, -0.00022917]], dtype=np.float32)
 
 Blue = (255, 0, 0)
 Green = (0, 255, 0)
@@ -45,7 +45,7 @@ class Line:
         self.endx = None
         # x values for detected line pixels
         self.allx = None
-        # y values for detected line pixels51
+        # y values for detected line pixels
         self.ally = None
         # road information
         self.road_inf = None
@@ -103,10 +103,10 @@ def lab_combine(img): #, th_h, th_l, th_s):
     # B = lab[:, :, 2]
 
     filtered_51l = cv2.medianBlur(L, ksize=51)
-    light = np.uint8(0.8*np.double(filtered_51l))
+    # light = np.uint8(0.8*np.double(filtered_51l))
 
-    # inverse_l = cv2.bitwise_not(L)
-    inverse_l = cv2.bitwise_not(light)
+    inverse_l = cv2.bitwise_not(L)
+    # inverse_l = cv2.bitwise_not(light)
     middle_process = cv2.add(inverse_l, filtered_51l)
     process_51l = cv2.bitwise_not(middle_process)
 
