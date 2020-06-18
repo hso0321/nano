@@ -9,9 +9,13 @@ from geometry_msgs.msg import Twist
 from darknet_ros_msgs.msg import BoundingBoxes
 
 lasterror = 0
-Max_vel = 0.12
+# Max_vel = 0.12 # 왜 최저속도보다 낮은가?
+Max_vel = 0.24
 Min_lin = 0.2
-Min_ang = 2.0
+# Min_ang = 2.0
+# Min_ang = 2.0
+Min_ang = 4.0
+vertical_flag = 0
 
 # driving flags
 # default is 1
@@ -26,9 +30,54 @@ cases_dynamic= [1,1,1,1]
 depth_class = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 def cbFollowLane(desired_center):
-    global lasterror
+    global lasterror, Max_vel, Min_ang, Min_lin
     center = desired_center.data
-    
+
+    if vertical_flag == 1:
+        print('find horizon line')
+        if cases_dynamic[2] == 0:      # red light
+            fnShutDown()
+        elif cases_dynamic[3] == 0:     # green light
+            fnShutDown()       # 강제 직진
+        elif cases_dynamic[1] == 0:     # turtle bot
+            fnShutDown()       # 회피기동
+        elif cases_static[0] == 0:  # 우회전 금지
+            fnShutDown()       # 강제 직진
+        elif cases_static[4] == 0:  # 로터리
+            fnShutDown()       # 강제 직진
+    else:
+        if cases_dynamic[0] == 0:       # find people
+            print('meet people!')
+            fnShutDown()
+        elif cases_static[1] == 0:      # limit low_vel
+            print('limit lowest_vel!')
+            Max_vel=0.3,Min_lin= 0.3
+            fnDrive(center)
+        elif cases_static[2] == 0:      # children zone
+            print('children zone')
+            Max_vel = 0.15, Min_lin = 0.15
+            fnDrive(center)
+        elif cases_static[5] == 0:      # turnnel
+            pass            # 터널 강제기동
+        elif cases_static [3] == 0:     # unlimit
+            Max_vel = 0.24, Min_lin = 0.2
+            fnDrive(center)
+            print('To origin setting!')
+        else:
+            print('just drive!')
+            fnDrive(center)
+        
+    return 
+
+
+def fnDrive(center):
+    global lasterror, Max_vel, Min_lin, Min_ang
+
+    error = center - 150
+
+    # Kp = 0.0025
+    Kp = 0.01
+
     error = center - 160
 
     Kp = 0.0025
@@ -63,7 +112,7 @@ def fnShutDown():
 
 def depth_call_back(msg):
     # for using global_val
-    global cases, depth_class
+    global cases_static, cases_dynamic, depth_class
 
     # box number in ymax(in first box)
     for box in range(0, msg.bounding_boxes[0].ymax) :
@@ -166,7 +215,8 @@ def depth_call_back(msg):
     else :
         cases_dynamic[3] = 1
     
-    print("{}, {}, {}, {}".format(cases[0], cases[1], cases[2], cases[3]))
+    print("cases_static = {}, {}, {}, {}, {}, {}".format(cases_static[0], cases_static[1], cases_static[2], cases_static[3], cases_static[4], cases_static[5]))
+    print("cases_dynamic = {}, {}, {}, {}".format(cases_dynamic[0], cases_dynamic[1], cases_dynamic[2], cases_dynamic[3]))
 
     #  for debug
     for i in range(0, len(depth_class)): 
