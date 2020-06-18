@@ -100,12 +100,13 @@ def lab_combine(img): #, th_h, th_l, th_s):
 
     L = lab[:, :, 0]
     A = lab[:, :, 1]
-    B = lab[:, :, 2]
+    # B = lab[:, :, 2]
 
     filtered_51l = cv2.medianBlur(L, ksize=51)
     light = np.uint8(0.8*np.double(filtered_51l))
 
-    inverse_l = cv2.bitwise_not(L)
+    # inverse_l = cv2.bitwise_not(L)
+    inverse_l = cv2.bitwise_not(light)
     middle_process = cv2.add(inverse_l, filtered_51l)
     process_51l = cv2.bitwise_not(middle_process)
 
@@ -114,7 +115,7 @@ def lab_combine(img): #, th_h, th_l, th_s):
     process_red = np.uint8(0.5 * np.double(masked_red_a))
     single_line = cv2.add(process_51l, process_red)
     # _, single_line_thresh = cv2.threshold(single_line, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    _, single_line_thresh = cv2.threshold(single_line, 60, 255, cv2.THRESH_BINARY)
+    # _, single_line_thresh = cv2.threshold(single_line, 60, 255, cv2.THRESH_BINARY)
     # test = cv2.add(cv2.bitwise_not(cv2.add(inverse_l, light)), process_red)
     # _, test_thresh = cv2.threshold(test, 70, 255, cv2.THRESH_BINARY)
     # _, test_thresh2 = cv2.threshold(test, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
