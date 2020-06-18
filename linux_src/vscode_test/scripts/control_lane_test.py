@@ -12,10 +12,13 @@ from darknet_ros_msgs.msg import BoundingBoxes
 lasterror = 0
 Max_vel = 0.12
 Min_lin = 0.2
-Min_ang = 3.0
+# Min_ang = 2.0
+Min_ang = 4.0
 stop_count = 0
 reset_count = 0
 vertical_flag = 0
+
+val = 0
 
 # driving flags
 # stop, low_vel(limit_vel), low_vel(child) high_vel, 
@@ -31,15 +34,20 @@ def cbFollowLane(desired_center):
     center = desired_center.data
 
     if vertical_flag == 1:
+        print('find horizon line')
         fnShutDown()
     else:
         if cases[0] == 0:       # find people
+            print('meet people!')
             fnShutDown()
         elif cases[1] == 0:     # limit low_vel
+            print('limit lowest_vel!')
             fnDrive(center, Max_vel=1.5*Max_vel,Min_lin=1.5*Min_lin)
         elif cases[2] == 0:     # children zone
+            print('children zone')
             fnDrive(center, Max_vel=0.7*Max_vel)
         else:
+            print('just drive!')
             fnDrive(center)
         
     return 
@@ -48,9 +56,10 @@ def cbFollowLane(desired_center):
 def fnDrive(center,Max_vel=Max_vel, Min_lin=Min_lin, Min_ang=Min_ang):
     global lasterror
 
-    error = center - 145
+    error = center - 150
 
-    Kp = 0.0025
+    # Kp = 0.0025
+    Kp = 0.005
     Kd = 0.007
 
     angular_z = Kp * error + Kd * (error - lasterror)
@@ -175,17 +184,10 @@ def depth_call_back(msg):
 def cbStopLane(bool_msg):
     global reset_count, stop_count
     bool_msg = Bool()
+    print('stop lane signal')
     if bool_msg.data == True:
-        if stop_count < 200:
-            vertical_flag = 1
-            stop_count += 1
-        else:
-            vertical_flag = 0
-            if reset_count < 100:
-                reset_count += 1
-            else:
-                stop_count = 0
-                reset_count = 0
+        vertical_flag = 1
+
 
             
     return
