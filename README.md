@@ -4,8 +4,8 @@ ROS와 물체인식을 이용한 자율주행 시스템
  jetson nano 보드를 이용한 간이 차체를 제작하여 자율주행을 합니다. 자율주행을 위해서는 많은 센서가 필요하고 유기적으로 작동을 하기 위해 ROS를 사용합니다. 구체적으로 차체에 장착하는 모듈은 raspberry pi camera를 이용하여 도로를 인식하고, d435i를 이용하여 차량 전방의 물체를 인식하고 거리(depth)를 측정합니다. 동시에 Server와 차량은 통신을 실시간으로 합니다. Server는 차체에서 송신하는 데이터를 받아 미리 학습된 AI(yolov3-tiny)를 통해 객체를 실시간으로 인식하여 주행에 대한 판단을 전송합니다. 마지막으로 차량은 이 데이터를 수신하여 자율주행을 합니다.
 
 개발환경
- Server : Ubuntu18.04.4 LTS / GeForce GTX 2080 super / Intel Core i7-9700
- Board  : Nvidia jetson nano / RaspberryPi CameraV2 / d435i(Intel)
+ Server : Ubuntu18.04.4 LTS / GeForce GTX 2080 super / Intel Core i7-9700  
+ Board  : Nvidia jetson nano / RaspberryPi CameraV2 / d435i(Intel)  
 
 사용 기술
  머신러닝 플랫폼 : darnet
