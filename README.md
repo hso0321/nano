@@ -24,10 +24,13 @@ ROS와 물체인식을 이용한 자율주행 시스템
 
 darknet_ros(cuda를 먼저 설치하신 후 opencv를 설치하십시오.)
 
-yolov3-tiny를 사용한 이유는 실시간으로 서버와 이미지를 송수신해야 하기 때문입니다. Test를 시행한 결과, yolov3에서는 50~60의 FPS가 나오고, yolov3-tiny에서는 200~210FPS가 나오는 것을 확인했습니다.
+yolov3-tiny를 사용한 이유는 실시간으로 서버와 이미지를 송수신해야 하기 때문입니다. Test를 시행한 결과, yolov3에서는 50-60의 FPS가 나오고, yolov3-tiny에서는 200-210FPS가 나오는 것을 확인했습니다.
 
 학습된 데이터는 총 656장의 이미지를 이용하였습니다. 학습 횟수는 약 20000번 정도의 학습을 했습니다.
 
 아래의 url을 참고하여 다운 받으시면 됩니다.
 https://taemian.tistory.com/6
 
+<div>
+<img width="200" src="https://user-images.githubusercontent.com/61136992/84970278-4c614100-b155-11ea-8b98-d66856f9cd48.png">
+</div>
