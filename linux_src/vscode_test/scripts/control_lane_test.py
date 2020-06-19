@@ -55,6 +55,8 @@ def cbFollowLane(desired_center):
             force_drive(0)                # 강제 직진
 
         else:
+            print('STOP!')
+            # rospy.Timer(rospy.Duration(0.5), fnShutDown, oneshot=True)      # 강제 직진
             fnShutDown()                # 일단 정지
     else:
         if cases_dynamic[0] == 0:       # find people
@@ -198,7 +200,8 @@ def depth_call_back(msg):
     # static
 
     # 1.turn_limit
-    if 500 < depth_class[4] <= 540 :
+    if 250 < depth_class[6] <= 350 :
+        print('turn limit!')
         cases_static[0] = 0
     
     # 2.limit_speed
@@ -255,9 +258,12 @@ def depth_call_back(msg):
     return
 
 def cbStopLane(bool_msg):
+    global vertical_flag
     bool_msg = Bool()
-    if bool_msg.data == True:
-        fnShutDown()
+    print('bool_msg =', bool_msg.data)
+    if bool_msg.data == False:
+        vertical_flag = 1
+        print('find horizon line!')
     return
 
 if __name__ == '__main__':
