@@ -80,14 +80,11 @@ def fnDrive(center):
     global lasterror, max_vel, min_lin, min_ang
 
 
-    error = center - 150
-
-    # Kp = 0.0025
-    # Kp = 0.01
 
     error = center - 160
 
-    Kp = 0.0025
+    # Kp = 0.0025
+    Kp = 0.005
     Kd = 0.007
 
     angular_z = Kp * error + Kd * (error - lasterror)
