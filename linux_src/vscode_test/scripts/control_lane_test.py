@@ -10,10 +10,10 @@ from darknet_ros_msgs.msg import BoundingBoxes
 
 lasterror = 0
 # max_vel = 0.12 # 왜 최저속도보다 낮은가?
-max_vel = 0.12
-min_lin = 0.2
+max_vel = 0.09
+min_lin = 0.15
 
-min_ang = 2.0
+min_ang = 1.5
 # min_ang = 4.0
 vertical_flag = 0
 
@@ -23,11 +23,6 @@ vertical_flag = 0
 cases_static = [1,1,1,1,1,1]
 # people, turtle, red_light(traffic), green(traffic)
 cases_dynamic= [1,1,1,1]
-
-# for buffer effect index
-idx = 0
-buf_div = 30        
-
 
 def cbFollowLane(desired_center):
     global lasterror, max_vel, min_ang, min_lin
@@ -50,25 +45,29 @@ def cbFollowLane(desired_center):
         if cases_dynamic[0] == 0:       # find people
             print('meet people!')
             fnShutDown()
-        elif cases_static[1] == 0:      # limit low_vel
-            print('limit lowest_vel!')
-            max_vel=0.24
-            min_lin= 0.4
+        elif cases_static[3] == 0:     # unlimit
+            max_vel = 0.09
+            min_lin = 0.15
+            min_ang = 1.5
             fnDrive(center)
+            print('To origin setting!')
         elif cases_static[2] == 0:      # children zone
             print('children zone')
-            # max_vel = 0.06[855, 431, 0, 0, 0, 0, 0, 0, 587, 0, 0]
-            # min_lin = 0.1
-            # fnDrive(center)
-            fnShutDown()
+            max_vel =0.05
+            min_lin = 0.07
+            min_ang = 0.7
+            fnDrive(center)
+        elif cases_static[1] == 0:      # limit low_vel
+            print('limit lowest_vel!')
+            max_vel=0.18
+            min_lin= 0.3
+            min_ang=3.0
+            fnDrive(center)
+        
         elif cases_static[5] == 0:      # turnnel
             pass            # 터널 강제기동
 
-        elif cases_static[3] == 0:     # unlimit
-            max_vel = 0.12
-            min_lin = 0.2
-            fnDrive(center)
-            print('To origin setting!')
+       
         else:
             print('just drive!')
             fnDrive(center)
@@ -99,7 +98,7 @@ def fnDrive(center):
     twist.angular.z = -max(angular_z , -min_ang) if angular_z < 0 else -min(angular_z, min_ang)
     pub_cmd_vel.publish(twist)
 
-    print('pub cmd vel at', rospy.get_rostime().secs, rospy.get_rostime().nsecs,'\n')
+    # print('pub cmd vel at', rospy.get_rostime().secs, rospy.get_rostime().nsecs,'\n')
     return 
 
 def fnShutDown():
@@ -115,108 +114,99 @@ def fnShutDown():
     return
 
 def depth_call_back(msg):
-    global idx, buf_div
+    global depth_class, cases_dynamic, cases_static
 
     # depth of class
     # child, limit_speed, lottery, park, people, tunnel, turn_limit, turtle, unlimit, red_light, green_light
     # default is 0
     depth_class = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-    # for buffer effect
-    div = idx % buf_div
-
-    # for using global_val
-    global cases_static, cases_dynamic
-
     for box in range(0, 11):
         depth_class[box] = 0
 
     # box number in ymax(in first box)
-    if div == 29 :
-        for box in range(0, msg.bounding_boxes[0].ymax) :
-            # save depth
-            if msg.bounding_boxes[box].Class == 'child':
-                depth_class[0] = msg.bounding_boxes[box].xmax
-            elif msg.bounding_boxes[box].Class == 'limit_speed':
-                depth_class[1] = msg.bounding_boxes[box].xmax
-            elif msg.bounding_boxes[box].Class == 'lottery':
-                depth_class[2] = msg.bounding_boxes[box].xmax
-            elif msg.bounding_boxes[box].Class == 'park':
-                depth_class[3] = msg.bounding_boxes[box].xmax
-            elif msg.bounding_boxes[box].Class == 'people':
-                depth_class[4] = msg.bounding_boxes[box].xmax
-            elif msg.bounding_boxes[box].Class == 'tunnel':
-                depth_class[5] = msg.bounding_boxes[box].xmax
-            elif msg.bounding_boxes[box].Class == 'turn_limit':
-                depth_class[6] = msg.bounding_boxes[box].xmax
-            elif msg.bounding_boxes[box].Class == 'turtle':
-                depth_class[7] = msg.bounding_boxes[box].xmax
-            elif msg.bounding_boxes[box].Class == 'unlimit':
-                depth_class[8] = msg.bounding_boxes[box].xmax
-            elif msg.bounding_boxes[box].Class == 'red_light':
-                depth_class[9] = msg.bounding_boxes[box].xmax
-            elif msg.bounding_boxes[box].Class == 'green_light':
-                depth_class[10] = msg.bounding_boxes[box].xmax
-
-    print(depth_class)
-        
+    for box in range(0, msg.bounding_boxes[0].ymax) :
+        # save depth
+        if msg.bounding_boxes[box].Class == 'child':
+            depth_class[0] = msg.bounding_boxes[box].xmax
+        elif msg.bounding_boxes[box].Class == 'limit_speed':
+            depth_class[1] = msg.bounding_boxes[box].xmax
+        elif msg.bounding_boxes[box].Class == 'lottery':
+            depth_class[2] = msg.bounding_boxes[box].xmax
+        elif msg.bounding_boxes[box].Class == 'park':
+            depth_class[3] = msg.bounding_boxes[box].xmax
+        elif msg.bounding_boxes[box].Class == 'people':
+            depth_class[4] = msg.bounding_boxes[box].xmax
+        elif msg.bounding_boxes[box].Class == 'tunnel':
+            depth_class[5] = msg.bounding_boxes[box].xmax
+        elif msg.bounding_boxes[box].Class == 'turn_limit':
+            depth_class[6] = msg.bounding_boxes[box].xmax
+        elif msg.bounding_boxes[box].Class == 'turtle':
+            depth_class[7] = msg.bounding_boxes[box].xmax
+        elif msg.bounding_boxes[box].Class == 'unlimit':
+            depth_class[8] = msg.bounding_boxes[box].xmax
+        elif msg.bounding_boxes[box].Class == 'red_light':
+            depth_class[9] = msg.bounding_boxes[box].xmax
+        elif msg.bounding_boxes[box].Class == 'green_light':
+            depth_class[10] = msg.bounding_boxes[box].xmax
+    rospy.sleep(0.2)
     # scenario
     # static
 
     # 1.turn_limit
-    if 280 < depth_class[4] <= 320 :
+    if 500 < depth_class[4] <= 540 :
         cases_static[0] = 0
     
     # 2.limit_speed
-    if 280 < depth_class[1] <= 320 :
+    if 500 < depth_class[1] <= 540 :
         cases_static[1] = 0
 
     # 3.child
-    if 280 < depth_class[0] <= 320 :
+    if 500 < depth_class[0] <= 540 :
         cases_static[2] = 0
 
     # 4.unlimit
-    if 280 < depth_class[8] <= 320 :
+    if 500 < depth_class[8] <= 540 :
         cases_static[3] = 0
 
     # 5.lottery
-    if 280 < depth_class[2] <= 320 :
+    if 500 < depth_class[2] <= 540 :
         cases_static[4] = 0
 
     # 6.turnel
-    if 280 < depth_class[5] <= 320 :
+    if 500 < depth_class[5] <= 540 :
         cases_static[5] = 0
 
     # dynamic
 
     # 1.people
-    if 280 < depth_class[4] <= 320 :
+    if 500 < depth_class[4] <= 540 :
         cases_dynamic[0] = 0
     else :
         cases_dynamic[0] = 1
 
     # 2.turtle
-    if 280 < depth_class[7] <= 320 :
+    if 500 < depth_class[7] <= 540 :
         cases_dynamic[1] = 0
     else :
         cases_dynamic[1] = 1
 
     # 3.red_light(taffic)
-    if 280 < depth_class[9] <= 320 :
+    if 500 < depth_class[9] <= 540 :
         cases_dynamic[2] = 0
     else :
         cases_dynamic[2] = 1
 
     # 4.green_light(traffic)
-    if 280 < depth_class[10] <= 320 :
+    if 500 < depth_class[10] <=540 :
         cases_dynamic[3] = 0
     else :
         cases_dynamic[3] = 1
-    
-    print("cases_static = {}, {}, {}, {}, {}, {}".format(cases_static[0], cases_static[1], cases_static[2], cases_static[3], cases_static[4], cases_static[5]))
-    print("cases_dynamic = {}, {}, {}, {}".format(cases_dynamic[0], cases_dynamic[1], cases_dynamic[2], cases_dynamic[3]))
 
-    idx+=1
+    print("cases_static = {}, {}, {}, {}, {}, {}".format(cases_static[0], cases_static[1], cases_static[2], cases_static[3], cases_static[4], cases_static[5]))
+    # print("cases_dynamic = {}, {}, {}, {}".format(cases_dynamic[0], cases_dynamic[1], cases_dynamic[2], cases_dynamic[3]))
+
+    print(depth_class)
 
     return
 
