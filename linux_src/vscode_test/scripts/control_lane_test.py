@@ -43,7 +43,7 @@ def cbFollowLane(desired_center):
 
         elif cases_static[4] == 0:      # 로터리
             fnShutDown()                # 강제 직진
-            if(cases_dynamic[1] == 0)
+            if(cases_dynamic[1] == 0):
                 force_drive(4)
 
         elif cases_static[0] == 0:      # 우회전 금지
