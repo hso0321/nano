@@ -35,19 +35,24 @@ def cbFollowLane(desired_center):
             fnShutDown()
 
         elif cases_dynamic[3] == 0:     # green light
-            fnShutDown()                # 강제 직진
-            force_drive()
+            rospy.Timer(rospy.Duration(0.5), fnShutDown, oneshot=True)      # 강제 직진
+            force_drive(6)
 
-        elif cases_dynamic[1] == 0:     # turtle bot 로터리 상황
-            fnShutDown() 
+        # elif cases_dynamic[1] == 0:     # turtle bot 로터리 상황
+        #     fnShutDown() 
 
         elif cases_static[4] == 0:      # 로터리
-            fnShutDown()                # 강제 직진
-            if(cases_dynamic[1] == 0):
+            # fnShutDown()                # 강제 직진
+            # if(cases_dynamic[1] == 0):
+            #     force_drive(6)
+            # rospy.Timer(rospy.Duration(0.5), fnShutDown, oneshot=True)
+            if cases_dynamic[1] == 0:
                 force_drive(4)
+            else:
+                fnShutDown()
 
         elif cases_static[0] == 0:      # 우회전 금지
-            fnShutDown()                # 강제 직진
+            force_drive(0)                # 강제 직진
 
         else:
             fnShutDown()                # 일단 정지
@@ -55,11 +60,15 @@ def cbFollowLane(desired_center):
         if cases_dynamic[0] == 0:       # find people
             print('meet people!')
             fnShutDown()
-        elif cases_dynamic[1] == 0:
-            fnShutDown()
+        elif cases_dynamic[1] == 0:     # 터틀봇
+            if cases_dynamic[1] == 0:
+                fnShutDown()
+            else:
+                fnDrive(center)
         elif cases_static[5] == 0:      # turnnel
-            force_drive(5)               # 터널 강제기동
-            cases_static[5] = 1
+            # force_drive(5)               # 터널 강제기동
+            fnShutDown()
+            # cases_static[5] = 1
         elif cases_static[3] == 0:      # unlimit
             max_vel = 0.09
             min_lin = 0.15
@@ -123,18 +132,33 @@ def fnShutDown():
     pub_cmd_vel.publish(twist)
 
     return
-def force_drive(var):
+
+
+def move_forward():
+    twist = Twist()
+    twist.linear.x = 0.15
+    twist.linear.y = 0
+    twist.linear.z = 0
+    twist.angular.x = 0
+    twist.angular.y = 0
+    twist.angular.z = 0
+    pub_cmd_vel.publish(twist)
+    return
+
+
+def force_drive(case):
     # 강제 직진 코드를 짜주세요
     global cases_static
-    if cases_static[var] == 0 :
-        cases_static[var] == 1
-    else :
-        cases_static[var] == 0
-
+    if case == 6 :
+        rospy.Timer(rospy.Duration(1), move_forward, oneshot=True)
+    else:
+        if cases_static[case] == 0:
+            rospy.Timer(rospy.Duration(1), move_forward, oneshot=True)
+            cases_static[case] == 1
     return
 
 def depth_call_back(msg):
-    global depth_class, cases_dynamic, cases_static
+    global cases_dynamic, cases_static
 
     # depth of class
     # child, limit_speed, lottery, park, people, tunnel, turn_limit, turtle, unlimit, red_light, green_light
