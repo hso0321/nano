@@ -167,51 +167,51 @@ def depth_call_back(msg):
     # static
 
     # 1.turn_limit
-    if 480 < depth_class[4] <= 520 :
+    if 280 < depth_class[4] <= 320 :
         cases_static[0] = 0
     
     # 2.limit_speed
-    if 480 < depth_class[1] <= 520 :
+    if 280 < depth_class[1] <= 320 :
         cases_static[1] = 0
 
     # 3.child
-    if 480 < depth_class[0] <= 520 :
+    if 280 < depth_class[0] <= 320 :
         cases_static[2] = 0
 
     # 4.unlimit
-    if 480 < depth_class[8] <= 520 :
+    if 280 < depth_class[8] <= 320 :
         cases_static[3] = 0
 
     # 5.lottery
-    if 480 < depth_class[2] <= 520 :
+    if 280 < depth_class[2] <= 320 :
         cases_static[4] = 0
 
     # 6.turnel
-    if 480 < depth_class[5] <= 520 :
+    if 280 < depth_class[5] <= 320 :
         cases_static[5] = 0
 
     # dynamic
 
     # 1.people
-    if 480 < depth_class[4] <= 520 :
+    if 280 < depth_class[4] <= 320 :
         cases_dynamic[0] = 0
     else :
         cases_dynamic[0] = 1
 
     # 2.turtle
-    if 480 < depth_class[7] <= 520 :
+    if 280 < depth_class[7] <= 320 :
         cases_dynamic[1] = 0
     else :
         cases_dynamic[1] = 1
 
     # 3.red_light(taffic)
-    if 480 < depth_class[9] <= 520 :
+    if 280 < depth_class[9] <= 320 :
         cases_dynamic[2] = 0
     else :
         cases_dynamic[2] = 1
 
     # 4.green_light(traffic)
-    if 480 < depth_class[10] <= 520 :
+    if 280 < depth_class[10] <= 320 :
         cases_dynamic[3] = 0
     else :
         cases_dynamic[3] = 1
