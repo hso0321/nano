@@ -30,22 +30,37 @@ def cbFollowLane(desired_center):
     center = desired_center.data
 
     if vertical_flag == 1:
-        print('find horizon line')
+        print('vertical_flag success')
         if cases_dynamic[2] == 0:      # red light
             fnShutDown()
+
         elif cases_dynamic[3] == 0:     # green light
-            fnShutDown()       # 강제 직진
-        elif cases_dynamic[1] == 0:     # turtle bot
-            fnShutDown()       # 회피기동
-        elif cases_static[0] == 0:  # 우회전 금지
-            fnShutDown()       # 강제 직진
-        elif cases_static[4] == 0:  # 로터리
-            fnShutDown()       # 강제 직진
+            fnShutDown()                # 강제 직진
+            force_drive()
+
+        elif cases_dynamic[1] == 0:     # turtle bot 로터리 상황
+            fnShutDown() 
+
+        elif cases_static[4] == 0:      # 로터리
+            fnShutDown()                # 강제 직진
+            if(cases_dynamic[1] == 0)
+                force_drive(4)
+
+        elif cases_static[0] == 0:      # 우회전 금지
+            fnShutDown()                # 강제 직진
+
+        else:
+            fnShutDown()                # 일단 정지
     else:
         if cases_dynamic[0] == 0:       # find people
             print('meet people!')
             fnShutDown()
-        elif cases_static[3] == 0:     # unlimit
+        elif cases_dynamic[1] == 0:
+            fnShutDown()
+        elif cases_static[5] == 0:      # turnnel
+            force_drive(5)               # 터널 강제기동
+            cases_static[5] = 1
+        elif cases_static[3] == 0:      # unlimit
             max_vel = 0.09
             min_lin = 0.15
             min_ang = 1.5
@@ -64,8 +79,6 @@ def cbFollowLane(desired_center):
             min_ang=3.0
             fnDrive(center)
         
-        elif cases_static[5] == 0:      # turnnel
-            pass            # 터널 강제기동
 
        
         else:
@@ -77,8 +90,6 @@ def cbFollowLane(desired_center):
 
 def fnDrive(center):
     global lasterror, max_vel, min_lin, min_ang
-
-
 
     error = center - 160
 
@@ -110,6 +121,15 @@ def fnShutDown():
     twist.angular.y = 0
     twist.angular.z = 0
     pub_cmd_vel.publish(twist)
+
+    return
+def force_drive(var):
+    # 강제 직진 코드를 짜주세요
+    global cases_static
+    if cases_static[var] == 0 :
+        cases_static[var] == 1
+    else :
+        cases_static[var] == 0
 
     return
 
@@ -186,7 +206,7 @@ def depth_call_back(msg):
         cases_dynamic[0] = 1
 
     # 2.turtle
-    if 500 < depth_class[7] <= 540 :
+    if 100 < depth_class[7] <= 240 :
         cases_dynamic[1] = 0
     else :
         cases_dynamic[1] = 1
