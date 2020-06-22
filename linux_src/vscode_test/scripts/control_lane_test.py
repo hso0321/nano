@@ -11,13 +11,13 @@ from darknet_ros_msgs.msg import BoundingBoxes
 lasterror = 0
 # max_vel = 0.12 # 왜 최저속도보다 낮은가?
 
-# std_max_vel = 0.09
-# std_min_lin = 0.15
-# std_min_ang = 1.5
+std_max_vel = 0.09
+std_min_lin = 0.15
+std_min_ang = 1.5
 
-std_max_vel = 0.05
-std_min_lin = 0.08
-std_min_ang = 0.8
+# std_max_vel = 0.05
+# std_min_lin = 0.08
+# std_min_ang = 0.8
 
 max_vel = 0
 min_lin = 0
@@ -60,8 +60,10 @@ def cbFollowLane(desired_center):
             else:
                 fnShutDown()
 
-        elif cases_static[0] == 0:      # 우회전 금지
+        elif cases_static[0] == 0:      # turn limit
             print('turn limit!')
+            fnShutDown()
+            rospy.sleep(1)
             force_drive(0)                # 강제 직진
             vertical_flag =0
 
@@ -171,14 +173,11 @@ def force_drive(case):
     else:
         print('go straight')
         if cases_static[case] == 0:
-            while(rospy.get_time() > start_t + 2):
+            while(rospy.get_time() < start_t + 2):
+                print("whiling")
                 move_forward()
                 rospy.sleep(0.04)
-            # rospy.sleep(1.0)
-            # move_forward()
-            # print('sleep')
-            # rospy.sleep(5.0)
-            # print('wake up')
+            
             cases_static[case] == 1
     
     return
@@ -224,7 +223,7 @@ def depth_call_back(msg):
     # static
 
     # 1.turn_limit
-    if 240 < depth_class[6] <= 350 :
+    if depth_class[6] != 0 :
         print('find turn limit!')
         cases_static[0] = 0
     
