@@ -10,10 +10,19 @@ from darknet_ros_msgs.msg import BoundingBoxes
 
 lasterror = 0
 # max_vel = 0.12 # 왜 최저속도보다 낮은가?
-max_vel = 0.09
-min_lin = 0.15
 
-min_ang = 1.5
+# std_max_vel = 0.09
+# std_min_lin = 0.15
+# std_min_ang = 1.5
+
+std_max_vel = 0.05
+std_min_lin = 0.08
+std_min_ang = 0.8
+
+max_vel = 0
+min_lin = 0
+
+min_ang = 0
 # min_ang = 4.0
 vertical_flag = 0
 
@@ -52,7 +61,10 @@ def cbFollowLane(desired_center):
                 fnShutDown()
 
         elif cases_static[0] == 0:      # 우회전 금지
+            print('turn limit!')
             force_drive(0)                # 강제 직진
+            vertical_flag =0
+
 
         else:
             print('STOP!')
@@ -72,22 +84,22 @@ def cbFollowLane(desired_center):
             fnShutDown()
             # cases_static[5] = 1
         elif cases_static[3] == 0:      # unlimit
-            max_vel = 0.09
-            min_lin = 0.15
-            min_ang = 1.5
+            max_vel = std_max_vel
+            min_lin = std_min_lin
+            min_ang = std_min_ang
             fnDrive(center)
             print('To origin setting!')
         elif cases_static[2] == 0:      # children zone
             print('children zone')
-            max_vel =0.05
-            min_lin = 0.07
-            min_ang = 0.7
+            max_vel = 0.5 * std_max_vel
+            min_lin = 0.5 * std_min_lin
+            min_ang = 0.5 * std_min_ang
             fnDrive(center)
         elif cases_static[1] == 0:      # limit low_vel
             print('limit lowest_vel!')
-            max_vel=0.18
-            min_lin= 0.3
-            min_ang=3.0
+            max_vel = 2 * std_max_vel
+            min_lin = 2 * std_min_lin
+            min_ang = 2 * std_min_ang
             fnDrive(center)
         
 
@@ -138,7 +150,7 @@ def fnShutDown():
 
 def move_forward():
     twist = Twist()
-    twist.linear.x = 0.15
+    twist.linear.x = 0.05
     twist.linear.y = 0
     twist.linear.z = 0
     twist.angular.x = 0
@@ -151,15 +163,24 @@ def move_forward():
 def force_drive(case):
     # 강제 직진 코드를 짜주세요
     global cases_static
+
+    start_t = rospy.get_time()
     if case == 6 :
         move_forward()
         rospy.sleep(1.0)
     else:
         print('go straight')
         if cases_static[case] == 0:
-            move_forward()
-            rospy.sleep(1.0)
+            while(rospy.get_time() > start_t + 2):
+                move_forward()
+                rospy.sleep(0.04)
+            # rospy.sleep(1.0)
+            # move_forward()
+            # print('sleep')
+            # rospy.sleep(5.0)
+            # print('wake up')
             cases_static[case] == 1
+    
     return
 
 def depth_call_back(msg):
@@ -203,8 +224,8 @@ def depth_call_back(msg):
     # static
 
     # 1.turn_limit
-    if 250 < depth_class[6] <= 350 :
-        print('turn limit!')
+    if 240 < depth_class[6] <= 350 :
+        print('find turn limit!')
         cases_static[0] = 0
     
     # 2.limit_speed
@@ -270,6 +291,9 @@ def cbStopLane(bool_msg):
     return
 
 if __name__ == '__main__':
+    max_vel = std_max_vel
+    min_lin = std_min_lin
+    min_ang = std_min_ang
 
     rospy.init_node('control_lane')
     sub_lane = rospy.Subscriber('/detect/lane', Float64, cbFollowLane, queue_size=1)
