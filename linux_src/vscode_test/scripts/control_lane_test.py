@@ -152,10 +152,12 @@ def force_drive(case):
     # 강제 직진 코드를 짜주세요
     global cases_static
     if case == 6 :
-        rospy.Timer(rospy.Duration(1), move_forward, oneshot=True)
+        move_forward()
+        rospy.sleep(1.0)
     else:
         if cases_static[case] == 0:
-            rospy.Timer(rospy.Duration(1), move_forward, oneshot=True)
+            move_forward()
+            rospy.sleep(1.0)
             cases_static[case] == 1
     return
 
