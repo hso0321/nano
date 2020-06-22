@@ -155,6 +155,7 @@ def force_drive(case):
         move_forward()
         rospy.sleep(1.0)
     else:
+        print('go straight')
         if cases_static[case] == 0:
             move_forward()
             rospy.sleep(1.0)
