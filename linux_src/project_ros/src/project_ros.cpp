@@ -5,23 +5,23 @@ int main(int argc, char **argv)
     //초기설정
     ros::init(argc, argv, "ros_subscribe");
 
-    //저장을 위한 초기설정
-    double rasp_fps = 30.0;
-    cv::Size size_rasp = cv::Size(1280, 720);
-    writer_rasp.open("/home/kim/test_video/rasp_cam.avi", cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), rasp_fps, size_rasp, true);
-    if(!writer_rasp.isOpened())
-    {
-        std::cout<<"동영상을 저장하기 위한 초기화 작업 중 에러 발생"<<std::endl;
-        return 1;
-    }
-    double d435i_fps = 30.0;
-    cv::Size size_d435i = cv::Size(640, 480);
-    writer_d435i.open("/home/kim/test_video/d435i_cam.avi", cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), d435i_fps, size_d435i, true);
-    if (!writer_d435i.isOpened())
-    {
-        std::cout << "동영상을 저장하기 위한 초기화 작업 중 에러 발생" << std::endl;
-        return 1;
-    }
+    // //저장을 위한 초기설정
+    // double rasp_fps = 30.0;
+    // cv::Size size_rasp = cv::Size(640, 480);
+    // writer_rasp.open("/home/kim/test_video/rasp_cam.avi", cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), rasp_fps, size_rasp, true);
+    // if(!writer_rasp.isOpened())
+    // {
+    //     std::cout<<"동영상을 저장하기 위한 초기화 작업 중 에러 발생"<<std::endl;
+    //     return 1;
+    // }
+    // double d435i_fps = 30.0;
+    // cv::Size size_d435i = cv::Size(640, 480);
+    // writer_d435i.open("/home/kim/test_video/d435i_cam.avi", cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), d435i_fps, size_d435i, true);
+    // if (!writer_d435i.isOpened())
+    // {
+    //     std::cout << "동영상을 저장하기 위한 초기화 작업 중 에러 발생" << std::endl;
+    //     return 1;
+    // }
     cv::namedWindow("d435i_view");
     cv::namedWindow("rasp_view");
     cv::startWindowThread();
@@ -29,7 +29,7 @@ int main(int argc, char **argv)
     // 노드 제어
     ros::NodeHandle n;
     
-    projectPublisher_ = n.advertise<darknet_ros_msgs::BoundingBoxes>("projet_pub", 1);
+    projectPublisher_ = n.advertise<darknet_ros_msgs::BoundingBoxes>("project_pub", 1);
 
     sub_rasp_cam = n.subscribe("/rasp_cam_pub", 1, sub_rasp_cam_callback);
     sub_rgb_cam = n.subscribe("/cam_1/color/image_raw", 2, sub_rgb_cam_callback);
@@ -57,6 +57,22 @@ void sub_imu_cam_callback(const sensor_msgs::Imu::ConstPtr& msg)
     }
 }
 
+// // 사진 데이터 수집을 위해
+// int idx = 0;
+// cv::Mat cp;
+
+// void CallBackFunc(int event, int x, int y, int flags, void *userdata)
+// {
+//     if (event == CV_EVENT_LBUTTONDOWN)
+//     {
+//         ROS_INFO("Button Down");
+//         char buf[256];
+//         std::sprintf(buf, "/home/kim/test_video/test2/supple_%d.png", idx);
+//         cv::imwrite(buf, cp);
+//         idx++;
+//     }
+// }
+
 void sub_rgb_cam_callback(const sensor_msgs::Image::ConstPtr& msg)
 {
     try
@@ -64,11 +80,15 @@ void sub_rgb_cam_callback(const sensor_msgs::Image::ConstPtr& msg)
         cv_bridge::CvImagePtr cvi;
         cvi=cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
-        //ROS_INFO("image_width : %d, image_height : %d ",cvi->image.cols, cvi->image.rows);
-        //저장
-        //writer_d435i.write(cvi->image); 
+        // // 저장
+        // writer_d435i.write(cvi->image);
 
+        // // 사진 저장
+        // cvi->image.copyTo(cp);
+        // cv::setMouseCallback("d435i_view", CallBackFunc, NULL);
+        
         cv::imshow("d435i_view", cvi->image);
+
         cv::waitKey(1);
         //ROS_INFO("d435i receive suceess");
     }
@@ -86,8 +106,13 @@ void sub_rasp_cam_callback(const sensor_msgs::Image::ConstPtr& msg)
         cv_bridge::CvImagePtr cvi;
         cvi=cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
-        //저장
-        //writer_rasp.write(cvi->image);
+        // // 저장
+        // writer_rasp.write(cvi->image);
+        
+        // // 사진 저장
+        // cvi->image.copyTo(cp);
+        // cv::setMouseCallback("rasp_view", CallBackFunc, NULL);
+        
         cv::imshow("rasp_view", cvi->image);
         cv::waitKey(1);
         //ROS_INFO("rasp_cam receive suceess");
@@ -167,7 +192,7 @@ void sub_yolo_callback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg)
         for (int idx = 0; idx < Boxes; idx++)
         {
             darknet_ros_msgs::BoundingBox box;
-            //copy for publish
+            // copy for publish
             box.probability = msg->bounding_boxes[idx].probability;
             box.xmin = (int)((msg->bounding_boxes[idx].xmin + msg->bounding_boxes[idx].xmax) / 2);
             box.ymin = (int)((msg->bounding_boxes[idx].ymin + msg->bounding_boxes[idx].ymax) / 2);
@@ -176,6 +201,12 @@ void sub_yolo_callback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg)
 
             // depth 저장
             box.xmax = (dst.at<unsigned short>(box.ymin, box.xmin));
+
+            // box 갯수 저장
+            if(idx == 0)
+            {
+                box.ymax = Boxes;
+            }
 
             pub_data.bounding_boxes.push_back(box);
         }
