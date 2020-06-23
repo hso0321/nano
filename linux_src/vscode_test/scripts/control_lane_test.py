@@ -24,6 +24,7 @@ min_lin = 0
 
 min_ang = 0
 # min_ang = 4.0
+# vertical_variable
 vertical_flag = 0
 
 # driving flags
@@ -38,77 +39,77 @@ def cbFollowLane(desired_center):
     global cases_static, cases_dynamic, vertical_flag
     center = desired_center.data
 
-    if vertical_flag == 1:
-        print('vertical_flag success')
-        if cases_dynamic[2] == 0:      # red light
-            fnShutDown()
-
-        elif cases_dynamic[3] == 0:     # green light
-            rospy.Timer(rospy.Duration(0.5), fnShutDown, oneshot=True)      # 강제 직진
-            force_drive(6)
-
-        # elif cases_dynamic[1] == 0:     # turtle bot 로터리 상황
-        #     fnShutDown() 
-
-        elif cases_static[4] == 0:      # 로터리
-            # fnShutDown()                # 강제 직진
-            # if(cases_dynamic[1] == 0):
-            #     force_drive(6)
-            # rospy.Timer(rospy.Duration(0.5), fnShutDown, oneshot=True)
-            if cases_dynamic[1] == 0:
-                force_drive(4)
-            else:
+    # print("cases_static = {}, {}, {}, {}, {}, {}".format(cases_static[0], cases_static[1], cases_static[2], cases_static[3], cases_static[4], cases_static[5]))
+    print("cases_dynamic = {}, {}, {}, {}".format(cases_dynamic[0], cases_dynamic[1], cases_dynamic[2], cases_dynamic[3]))
+    if(center > 0) :
+        if vertical_flag == 1:
+            print('vertical_flag success')
+            if cases_dynamic[2] == 0:      # red light
                 fnShutDown()
 
-        elif cases_static[0] == 0:      # turn limit
-            print('turn limit!')
-            fnShutDown()
-            rospy.sleep(1)
-            force_drive(0)                # 강제 직진
-            vertical_flag =0
+            elif cases_dynamic[3] == 0:     # green light
+                vertical_flag = 1
+                force_drive(6)                            # 강제 직진
 
 
-        else:
-            print('STOP!')
-            # rospy.Timer(rospy.Duration(0.5), fnShutDown, oneshot=True)      # 강제 직진
-            fnShutDown()                # 일단 정지
-    else:
-        if cases_dynamic[0] == 0:       # find people
-            print('meet people!')
-            fnShutDown()
-        elif cases_dynamic[1] == 0:     # 터틀봇
-            if cases_dynamic[1] == 0:
+            elif cases_static[4] == 0:      # 로터리
+                        # 강제 직진
+                print("I'am lottery")
                 fnShutDown()
+                if cases_dynamic[1] ==0 :
+                    print("tuetle")
+                    rospy.sleep(2)
+                    force_drive(6)
+                    vertical_flag=0
+
+            elif cases_static[0] == 0:      # turn limit
+                print('turn limit!')
+                fnShutDown()
+                rospy.sleep(1)
+                force_drive(0)                # 강제 직진
+                vertical_flag =0
+
             else:
+                print('STOP!')
+                # rospy.Timer(rospy.Duration(0.5), fnShutDown, oneshot=True)      # 강제 직진
+                fnShutDown()                # 일단 정지
+        else:                               # 정지선을 안 만났을때
+            if cases_dynamic[0] == 0:       # find people
+                print('meet people!')
+                fnShutDown()
+                rospy.sleep(2)
+            elif cases_dynamic[1] == 0:     # 터틀봇
+                print("i see turtlebot!!!")
+                fnShutDown()
+            elif cases_static[5] == 0:      # turnnel
                 fnDrive(center)
-        elif cases_static[5] == 0:      # turnnel
-            # force_drive(5)               # 터널 강제기동
-            fnShutDown()
-            # cases_static[5] = 1
-        elif cases_static[3] == 0:      # unlimit
-            max_vel = std_max_vel
-            min_lin = std_min_lin
-            min_ang = std_min_ang
-            fnDrive(center)
-            print('To origin setting!')
-        elif cases_static[2] == 0:      # children zone
-            print('children zone')
-            max_vel = 0.5 * std_max_vel
-            min_lin = 0.5 * std_min_lin
-            min_ang = 0.5 * std_min_ang
-            fnDrive(center)
-        elif cases_static[1] == 0:      # limit low_vel
-            print('limit lowest_vel!')
-            max_vel = 2 * std_max_vel
-            min_lin = 2 * std_min_lin
-            min_ang = 2 * std_min_ang
-            fnDrive(center)
-        
-
-       
-        else:
-            print('just drive!')
-            fnDrive(center)
+                # force_drive(5)               # 터널 강제기동
+                # fnShutDown()
+            elif cases_static[3] == 0:      # unlimit
+                max_vel = std_max_vel
+                min_lin = std_min_lin
+                min_ang = std_min_ang
+                fnDrive(center)
+                print('To origin setting!')
+            elif cases_static[2] == 0:      # children zone
+                print('children zone')
+                max_vel = 0.5 * std_max_vel
+                min_lin = 0.5 * std_min_lin
+                min_ang = 0.5 * std_min_ang
+                fnDrive(center)
+            elif cases_static[1] == 0:      # limit low_vel
+                print('limit lowest_vel!')
+                max_vel = 2 * std_max_vel
+                min_lin = 2 * std_min_lin
+                min_ang = 2 * std_min_ang
+                fnDrive(center)
+            
+            else:
+                print('just drive!')
+                fnDrive(center)
+    else:
+        print("error")
+        return -1
         
     return 
 
@@ -167,23 +168,17 @@ def force_drive(case):
     global cases_static
 
     start_t = rospy.get_time()
-    if case == 6 :
-        move_forward()
-        rospy.sleep(1.0)
-    else:
-        print('go straight')
-        if cases_static[case] == 0:
-            while(rospy.get_time() < start_t + 2):
+    if case != 6:               # 6일 경우는 플래그를 안 바꿈.
+        cases_static[case] = 1
+    while(rospy.get_time() < start_t + 3):
                 print("whiling")
                 move_forward()
                 rospy.sleep(0.04)
-            
-            cases_static[case] == 1
     
     return
 
 def depth_call_back(msg):
-    global cases_dynamic, cases_static
+    global cases_dynamic, cases_static, vertical_flag
 
     # depth of class
     # child, limit_speed, lottery, park, people, tunnel, turn_limit, turtle, unlimit, red_light, green_light
@@ -240,24 +235,50 @@ def depth_call_back(msg):
         cases_static[3] = 0
 
     # 5.lottery
-    if 500 < depth_class[2] <= 540 :
+    if depth_class[2] != 0 :
         cases_static[4] = 0
 
     # 6.turnel
-    if 500 < depth_class[5] <= 540 :
-        cases_static[5] = 0
+    if 320 < depth_class[5] <= 360 :
+        # bool_msg = Bool()
+        # bool_msg.data = True
+        # if cases_static[5] == 1 :
+            # start_t = rospy.get_time()
+            # while(rospy.get_time() < start_t + 4) :
+            #     tunnel_vel.publish(bool_msg)
+            # bool_msg.data = False
+            # tunnel_vel.publish(bool_msg)
+        start_t = rospy.get_time()
+        while(rospy.get_time() < start_t + 4) :
+            cases_static[5] = 0
+        cases_static[5] = 1
+
+                
+
+    # if 400 < depth_class[5] <= 450 :
+    #     Bool_msg = Bool()
+    #     Bool_msg.data = True
+    #     if cases_static[5] == 1 : 
+    #         start_t = rospy.get_time()
+    #         while(rospy.get_time() < start_t + 2) :
+    #             tunnel_vel.publish(Bool_msg)
+    #         Bool_msg.data = False
+    #         tunnel_vel.publish(Bool_msg)
+    #     cases_static[5] = 0
+
 
     # dynamic
 
     # 1.people
-    if 500 < depth_class[4] <= 540 :
+    if 0 < depth_class[4] <= 540 :
         cases_dynamic[0] = 0
     else :
         cases_dynamic[0] = 1
 
     # 2.turtle
-    if 100 < depth_class[7] <= 240 :
+    if 480 < depth_class[7] <= 550 :
         cases_dynamic[1] = 0
+
     else :
         cases_dynamic[1] = 1
 
@@ -268,12 +289,12 @@ def depth_call_back(msg):
         cases_dynamic[2] = 1
 
     # 4.green_light(traffic)
-    if 500 < depth_class[10] <=540 :
+    if 400 < depth_class[10] <=450 :
         cases_dynamic[3] = 0
     else :
         cases_dynamic[3] = 1
 
-    print("cases_static = {}, {}, {}, {}, {}, {}".format(cases_static[0], cases_static[1], cases_static[2], cases_static[3], cases_static[4], cases_static[5]))
+    # print("cases_static = {}, {}, {}, {}, {}, {}".format(cases_static[0], cases_static[1], cases_static[2], cases_static[3], cases_static[4], cases_static[5]))
     # print("cases_dynamic = {}, {}, {}, {}".format(cases_dynamic[0], cases_dynamic[1], cases_dynamic[2], cases_dynamic[3]))
 
     print(depth_class)
@@ -284,9 +305,11 @@ def cbStopLane(bool_msg):
     global vertical_flag
     bool_msg = Bool()
     print('bool_msg =', bool_msg.data)
-    if bool_msg.data == False:
-        vertical_flag = 1
+
+    if((bool_msg.data == False) and (cases_static[5] ==1)) :
         print('find horizon line!')
+        vertical_flag = 1
+
     return
 
 if __name__ == '__main__':
@@ -298,6 +321,7 @@ if __name__ == '__main__':
     sub_lane = rospy.Subscriber('/detect/lane', Float64, cbFollowLane, queue_size=1)
     stop = rospy.Subscriber('/detect/stop', Bool, cbStopLane, queue_size=1)
     pub_cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+    tunnel_vel = rospy.Publisher('/tunnel', Bool, queue_size=1)
     depth_data_sub = rospy.Subscriber('/project_pub', BoundingBoxes, depth_call_back , queue_size=1)
     rospy.on_shutdown(fnShutDown)
     rospy.spin()
