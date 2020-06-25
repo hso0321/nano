@@ -276,7 +276,7 @@ def depth_call_back(msg):
         cases_dynamic[0] = 1
 
     # 2.turtle
-    if 480 < depth_class[7] <= 550 :
+    if 0 < depth_class[7] <= 550 :
         cases_dynamic[1] = 0
 
     else :
@@ -289,7 +289,7 @@ def depth_call_back(msg):
         cases_dynamic[2] = 1
 
     # 4.green_light(traffic)
-    if 400 < depth_class[10] <=450 :
+    if 400 < depth_class[10] <=500 :
         cases_dynamic[3] = 0
     else :
         cases_dynamic[3] = 1
