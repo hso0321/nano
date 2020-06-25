@@ -15,11 +15,11 @@ bridge = CvBridge()
 
 vertices = [(0, 0), (0, 115), (72, 240), (268, 240), (320, 152), (320, 0)]
 
-Matrix = np.array([[702.79573591, 0., 639.68721137], [0., 700.36468219, 351.49375006], [0., 0., 1.]], dtype=np.float32)
-Distortion = np.array([[-0.24512458, -0.09374123, -0.01451455, -0.00190292, 0.22375519]], dtype=np.float32)
+# Matrix = np.array([[702.79573591, 0., 639.68721137], [0., 700.36468219, 351.49375006], [0., 0., 1.]], dtype=np.float32)
+# Distortion = np.array([[-0.24512458, -0.09374123, -0.01451455, -0.00190292, 0.22375519]], dtype=np.float32)
 
-# Matrix = np.array([[157.51653262, 0., 317.21445006], [0., 208.73433488, 294.81361953], [0., 0., 1.]], dtype=np.float32)
-# Distortion = np.array([[-0.05351266, 0.00367534, -0.00636313, 0.00040338, -0.00022917]], dtype=np.float32)
+Matrix = np.array([[157.51653262, 0., 317.21445006], [0., 208.73433488, 294.81361953], [0., 0., 1.]], dtype=np.float32)
+Distortion = np.array([[-0.05351266, 0.00367534, -0.00636313, 0.00040338, -0.00022917]], dtype=np.float32)
 
 Blue = (255, 0, 0)
 Green = (0, 255, 0)
@@ -45,7 +45,7 @@ class Line:
         self.endx = None
         # x values for detected line pixels
         self.allx = None
-        # y values for detected line pixels
+        # y values for detected line pixels51
         self.ally = None
         # road information
         self.road_inf = None
@@ -99,27 +99,41 @@ def lab_combine(img): #, th_h, th_l, th_s):
     lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
 
     L = lab[:, :, 0]
-    A = lab[:, :, 1]
-    # B = lab[:, :, 2]
+    # A = lab[:, :, 1]
+    B = lab[:, :, 2]
 
-    filtered_51l = cv2.medianBlur(L, ksize=51)
+    # filtered_51l = cv2.medianBlur(L, ksize=51)
     # light = np.uint8(0.8*np.double(filtered_51l))
+
+
 
     inverse_l = cv2.bitwise_not(L)
     # inverse_l = cv2.bitwise_not(light)
-    middle_process = cv2.add(inverse_l, filtered_51l)
-    process_51l = cv2.bitwise_not(middle_process)
+    # middle_process = cv2.add(inverse_l, filtered_51l)
+    # process_51l = cv2.bitwise_not(middle_process)
 
-    blur_a = cv2.GaussianBlur(A, (3, 3), 0)
-    _, masked_red_a = cv2.threshold(blur_a, 160, 255, cv2.THRESH_BINARY)
-    process_red = np.uint8(0.5 * np.double(masked_red_a))
-    single_line = cv2.add(process_51l, process_red)
+    filtered_151l = cv2.medianBlur(L, ksize=51)
+    middle_process = cv2.add(inverse_l, filtered_151l)
+    process_151l = cv2.bitwise_not(middle_process)
+
+
+    # blur_a = cv2.GaussianBlur(A, (3, 3), 0)
+    blur_b = cv2.GaussianBlur(B, (3, 3), 0)
+    # _, masked_red_a = cv2.threshold(blur_a, 160, 255, cv2.THRESH_BINARY)
+    _, masked_yellow_b = cv2.threshold(blur_b, 140, 255, cv2.THRESH_BINARY)
+    # process_red = np.uint8(0.5 * np.double(masked_red_a))
+    process_yellow = np.uint8(0.5 * np.double(masked_yellow_b))
+    # single_line = cv2.add(process_51l, process_red)
+    # single_line = cv2.add(process_151l, process_red)
+    single_line = cv2.add(process_151l, process_yellow)
+
     # _, single_line_thresh = cv2.threshold(single_line, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     # _, single_line_thresh = cv2.threshold(single_line, 60, 255, cv2.THRESH_BINARY)
     # test = cv2.add(cv2.bitwise_not(cv2.add(inverse_l, light)), process_red)
     # _, test_thresh = cv2.threshold(test, 70, 255, cv2.THRESH_BINARY)
     # _, test_thresh2 = cv2.threshold(test, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     test_blur = cv2.GaussianBlur(single_line, (3, 3), 0)
+    # _, test_thresh = cv2.threshold(test_blur, 30, 255, cv2.THRESH_BINARY)
     _, test_thresh = cv2.threshold(test_blur, 30, 255, cv2.THRESH_BINARY)
 
     # cv2.imshow('threshold', test_thresh)
@@ -128,22 +142,32 @@ def lab_combine(img): #, th_h, th_l, th_s):
 
 
 def find_line(b_img):
-    histogram = np.sum(b_img[184:225, 47:270], axis=1)
+    histogram = np.sum(b_img[189:219, 47:270], axis=1)
     # print('shape histogram', histogram.shape)       # (41,)
 
-    maxpoint = np.argmax(histogram[21:])
+    # maxpoint = np.argmax(histogram[21:])
+    idx = len((histogram > 30000).nonzero()[0])
     stop_msg = Bool()
-    stop_msg.data = False
-    if(histogram[maxpoint] >= 30000):
+    stop_msg.data = True
+    # print('horizon histo =', histogram)
+    # if(histogram[maxpoint] >= 30000):
+        # stop_msg.data = True
+        # pub_stop.publish(stop_msg)
+        # print('find horizon line!')
+
+    if idx > 10:
+        print('horizon histo =', histogram)
+        # print('num of idx =', idx)
         stop_msg.data = True
         pub_stop.publish(stop_msg)
+
     return
 
 
 # .detected로 시작해서, startx를 구하고 currentx를 할당한뒤, .detected 갱신하고 .startx에 결과저장
 def find_first(b_img, left_line, right_line):
     output = cv2.cvtColor(b_img, cv2.COLOR_GRAY2RGB)
-    print('BLIND, left detect =', left_line.detected, 'right detect =', right_line.detected)
+    # print('BLIND, left detect =', left_line.detected, 'right detect =', right_line.detected)
     # 둘다 없을 때
 
     if (left_line.detected == False) and (right_line.detected == False):
@@ -160,7 +184,7 @@ def find_first(b_img, left_line, right_line):
             current_leftX = start_leftX
         else:
             current_leftX = None
-            print('left line fail to detect!')
+            # print('left line fail to detect!')
             # left_line.startx = None
             # detected는 여전히 false
 
@@ -168,7 +192,7 @@ def find_first(b_img, left_line, right_line):
             current_rightX = start_rightX
         else:
             current_rightX = None
-            print('right line fail to detect!')
+            # print('right line fail to detect!')
             # right_line.startx = None
 
 
@@ -185,7 +209,7 @@ def find_first(b_img, left_line, right_line):
         else:
             current_leftX = None
             left_line.startx = None
-            print('left line fail to detect!')
+            # print('left line fail to detect!')
         current_rightX = right_line.startx  # 왼쪽 구했으니 오른쪽은 가져옴
         
 
@@ -202,7 +226,7 @@ def find_first(b_img, left_line, right_line):
         else:
             current_rightX = None
             right_line.startx = None
-            print('right line fail to detect!')
+            # print('right line fail to detect!')
 
         current_leftX = left_line.startx 
 
@@ -230,7 +254,7 @@ def find_first(b_img, left_line, right_line):
                 print('error current_leftX =', current_leftX, 'current_rightX =', current_rightX)
     
     # 테스트용
-    print('left line current  =', current_leftX, 'right line current =', current_rightX)
+    # print('left line current  =', current_leftX, 'right line current =', current_rightX)
 
 
     # startx와 detected 할당
@@ -249,7 +273,7 @@ def find_first(b_img, left_line, right_line):
         right_line.startx = current_rightX
         right_line.detected = True
         cv2.circle(output, (int(current_rightX), 205), 10, (0, 100, 255), -1)      # 주황점
-        print('right line find!')
+        # print('right line find!')
     else:
         right_line.startx = None
         right_line.detected = False
@@ -374,8 +398,8 @@ def sliding_window(b_img, output, left_line, right_line, window_height):
                 right_weight_y.append(int((win_y_low + new_high) / 2))
             # 중간 사라지게 테스트
             else:
-                # print('window =', window)
-                print('num right idx under cutline', num_right_inds)
+                print('window =', window)
+                # print('num right idx under cutline', num_right_inds)
                 # print('num right inds =', num_right_inds)
                 # print('win_right_lane', win_right_lane)
 
@@ -389,14 +413,14 @@ def sliding_window(b_img, output, left_line, right_line, window_height):
                     left_line.startx = None
                     left_line.detected = False
 
-                    print('swap l to r')
+                    # print('swap l to r')
                 else:
                     left_line.startx = current_leftX
                 # 점선이나 선이 없을 때
                 if num_left_inds < min_num_pixel: 
                     left_line.detected = False
                     left_line.startx = None
-                    print('left num idx =', num_left_inds)
+                    # print('left num idx =', num_left_inds)
             else:
                 if current_rightX is not None:
                     left_line.counter == 0
@@ -408,14 +432,14 @@ def sliding_window(b_img, output, left_line, right_line, window_height):
                     right_line.startx = None
                     right_line.detected = False
 
-                    print('swap r to l')
+                    # print('swap r to l')
                 else:
                     right_line.startx = current_rightX
 
                 if num_right_inds < min_num_pixel:
                     right_line.detected = False
                     right_line.startx = None
-                    print('right num idx =', num_right_inds)
+                    # print('right num idx =', num_right_inds)
 
             if left_line.detected == False:
                 if right_line.detected == False:            # 좌우 모두 없음
@@ -478,18 +502,18 @@ def blind_search(b_img, left_line, right_line):
     nonzerox = np.array(nonzero[1])
     if left_line.counter == 0:
         output = find_first(b_img, left_line, right_line)
-        print('blind counter =', left_line.counter)
+        # print('blind counter =', left_line.counter)
     else:
         print('blind counter =', left_line.counter)
     output = sliding_window(b_img, output, left_line, right_line, window_height)
     
-    print('lane detect result =', left_line.detected, right_line.detected)
+    # print('lane detect result =', left_line.detected, right_line.detected)
 
     return output
 
 
 def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 detected = True 일때
-    print('PREV window')
+    # print('PREV window')
     output = cv2.cvtColor(b_img, cv2.COLOR_GRAY2RGB)        # 색으로 결과를 확인하기 위한 이미지
 
     nonzero = b_img.nonzero()
@@ -584,7 +608,7 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
                 else:
                     current_rightX = None
                     l_flag = 0
-                print('numbers of left index < min pixel')
+                # print('numbers of left index < min pixel')
 
 
 
@@ -608,7 +632,7 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
                 else:
                     current_rightX = None
                     r_flag = 0
-                print("numbers of right index < min pixel")
+                # print("numbers of right index < min pixel")
 
         
         # 첫번째 윈도우에서 첫 포인트 판별
@@ -622,14 +646,14 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
                     # left_line.startx = None
                     left_line.detected = False
 
-                    print('swap l to r')
+                    # print('swap l to r')
                 else:
                     left_line.startx = current_leftX
                 # 점선이나 선이 없을 때
                 if num_left_inds < min_num_pixel: 
                     left_line.detected = False
                     # left_line.startx = None
-                    print('left num idx =', num_left_inds)
+                    # print('left num idx =', num_left_inds)
             else:
                 if current_rightX is not None:
                     left_line.counter == 0
@@ -642,14 +666,14 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
                     # right_line.startx = None
                     right_line.detected = False
 
-                    print('swap r to l')
+                    # print('swap r to l')
                 else:
                     right_line.startx = current_rightX
 
                 if num_right_inds < min_num_pixel:
                     right_line.detected = False
                     # right_line.startx = None
-                    print('right num idx =', num_right_inds)
+                    # print('right num idx =', num_right_inds)
 
     if left_line.detected == False:
         if right_line.detected == False:            # 좌우 모두 없음
@@ -705,7 +729,7 @@ def prev_window_refer(b_img, left_line, right_line):        # 좌우 모두 dete
     right_line.current_fit = right_fit
 
     output = drawline(output, left_fit, right_fit)
-    print('lane detect result =', left_line.detected, right_line.detected)
+    # print('lane detect result =', left_line.detected, right_line.detected)
     return output
 
 
@@ -713,7 +737,7 @@ def find_LR_lines(binary_img, left_line, right_line):
 
 
 
-    print('left line detected =', left_line.detected, 'right line detected =', right_line.detected)
+    # print('left line detected =', left_line.detected, 'right line detected =', right_line.detected)
 
     # if don't have lane lines info
     if (left_line.detected == False) or (right_line.detected == False):
@@ -749,9 +773,13 @@ def make_center(binary_img):
         cv2.polylines(binary_img, np.int_([np.array([np.transpose(np.vstack([centerx, ploty]))])]), isClosed=False, color=(255, 0, 255), thickness=8)
 
         msg_center = Float64()
-        msg_center.data = centerx.item(210)
+        msg_center.data = centerx.item(120)
         pub_lane.publish(msg_center)
-        print('center =', msg_center.data)
+        # print('center =', msg_center.data)
+    else :
+        msg_center = Float64()
+        msg_center.data = -1.0
+        pub_lane.publish(msg_center)
     return binary_img
 
 
@@ -767,7 +795,7 @@ def image_callback(msg):
         print(e)
     else:
         resized = ready_process(cv2_img)
-
+        test2_pub.publish(bridge.cv2_to_imgmsg(resized, "8UC3"))
         lab = lab_combine(resized)
         test1_pub.publish(bridge.cv2_to_imgmsg(lab, "8UC1"))
 
@@ -824,6 +852,7 @@ if __name__ == '__main__':
     pub_lane = rospy.Publisher("/detect/lane", Float64, queue_size=1)
     test_pub = rospy.Publisher("test_result", Image, queue_size=1)
     test1_pub = rospy.Publisher("test_threshold", Image, queue_size=1)
+    test2_pub = rospy.Publisher("test_distort", Image, queue_size=1)
     pub_stop = rospy.Publisher("/detect/stop", Bool, queue_size=1)
 
     image_listener()
