@@ -9,7 +9,7 @@
 
 ## <b>개발환경  </b>  
  Server : Ubuntu18.04.4 LTS / GeForce GTX 2080 super / Intel Core i7-9700  
- Board  : Nvidia jetson nano / Sony IMX219 / d435i(Intel)  
+ Board  : Nvidia jetson nano / Sony IMX219 / d435i(Intel) / 로보티스(OpenCR 보드, 모터)
 
 ## <b>사용 기술 </b>  
  머신러닝 플랫폼 : darnet  
@@ -26,8 +26,10 @@
 ## <b>주의점 </b>  
  ROS source는 ~/catkin/src 밑에 복사해서 사용  
  start_shell은 아무곳에서나 실행
+ start_shell/nano.sh만 Jetson nano board에서 실행(나머지는 server PC에서 실행)
 
-darknet_ros(cuda를 먼저 설치하신 후 opencv를 설치하십시오.)  
+darknet_ros(cuda를 먼저 설치하신 후 opencv를 설치하십시오.)
+darknet을 설치하는 PC나 보드는 OpenCV 3.xx 버젼을 사용하는 것을 권장합니다.  
 
 yolov3-tiny를 사용한 이유는 실시간으로 서버와 이미지를 송수신해야 하기 때문입니다. Test를 시행한 결과, yolov3에서는 50-60의 FPS가 나오고, yolov3-tiny에서는 200-210FPS가 나오는 것을 확인했습니다.
 
